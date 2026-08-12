@@ -93,6 +93,9 @@ export const VehiclesView: React.FC = () => {
         (serviceStatusFilter === 'Due for Service' && (v.status === 'Due for Service' || (nextRem && nextRem.remainingDays >= 0 && nextRem.remainingDays <= 14))) ||
         (serviceStatusFilter === 'Healthy' && v.healthScore >= 80);
 
+      // Manufacturer filter
+      const matchesMake = manufacturerFilter === 'ALL' || v.manufacturer === manufacturerFilter;
+
       return matchesSearch && matchesStatus && matchesServiceStatus && matchesType && matchesFuel && matchesMake;
     }).sort((a, b) => {
       if (sortBy === 'health') return a.healthScore - b.healthScore; // most critical first
@@ -383,6 +386,24 @@ export const VehiclesView: React.FC = () => {
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <div className="text-slate-600 truncate">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Next Service</span>
+                      <span className="font-semibold text-slate-800 truncate block max-w-[120px]">
+                        {smartReminders.find(r => r.vehicleId === v.id && r.status === 'Pending')?.category || 'Routine Check'}
+                      </span>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Due Date / Km</span>
+                      <span className="font-bold text-amber-800">
+                        {(() => {
+                          const rem = smartReminders.find(r => r.vehicleId === v.id && r.status === 'Pending');
+                          return rem ? formatDate(rem.dueDate) : 'On Schedule';
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
                     <div className="flex items-center gap-1.5 text-slate-600 truncate">
                       <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{driver ? driver.name : 'Unassigned Driver'}</span>
@@ -476,6 +497,7 @@ export const VehiclesView: React.FC = () => {
                   <th className="py-3.5 px-4">Vehicle / Reg Plate</th>
                   <th className="py-3.5 px-4">Make & Model</th>
                   <th className="py-3.5 px-4">Odometer</th>
+                  <th className="py-3.5 px-4">Next Service & Due</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4">Health</th>
                   <th className="py-3.5 px-4">Current Driver</th>
@@ -485,6 +507,7 @@ export const VehiclesView: React.FC = () => {
               <tbody className="divide-y divide-slate-100 font-medium">
                 {filteredVehicles.map(v => {
                   const driver = drivers.find(d => d.id === v.assignedDriverId);
+                  const nextRem = smartReminders.find(r => r.vehicleId === v.id && r.status === 'Pending');
 
                   return (
                     <tr key={v.id} className="hover:bg-slate-50/80 transition-colors">
@@ -511,6 +534,14 @@ export const VehiclesView: React.FC = () => {
 
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         {formatDistance(v.currentOdometer, userProfile.distanceUnit)}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-slate-700">
+                        <div className="font-semibold text-slate-900">{nextRem ? nextRem.category : 'Routine Service'}</div>
+                        <div className="text-[10px] text-amber-700 font-bold">
+                          {nextRem ? formatDate(nextRem.dueDate) : 'On Schedule'}
+                          {nextRem?.remainingKm !== undefined ? ` (~${nextRem.remainingKm.toLocaleString()} km)` : ''}
+                        </div>
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -575,6 +606,12 @@ export const VehiclesView: React.FC = () => {
           setVehicleToEdit(null);
         }}
         vehicleToEdit={vehicleToEdit}
+      />
+
+      {/* Import Vehicles Modal */}
+      <ImportVehiclesModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </div>
   );

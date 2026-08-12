@@ -28,7 +28,7 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
   onClose,
   vehicleToEdit
 }) => {
-  const { addVehicle, updateVehicle, drivers } = useFleet();
+  const { addVehicle, updateVehicle, addDocument, drivers } = useFleet();
 
   // Basic Information
   const [regNumber, setRegNumber] = useState('');
@@ -143,7 +143,7 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
         imageUrl: imageUrl.trim() || undefined
       });
     } else {
-      addVehicle({
+      const newVeh = addVehicle({
         registrationNumber: regNumber.toUpperCase().trim(),
         name,
         type,
@@ -166,6 +166,68 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
         status,
         imageUrl: imageUrl.trim() || undefined
       });
+
+      // Register initial documents if checked
+      if (hasRC) {
+        addDocument({
+          vehicleId: newVeh.id,
+          documentType: 'Registration Certificate (RC)',
+          documentNumber: `RC-${newVeh.registrationNumber.replace(/\s+/g, '')}`,
+          issueDate: new Date().toISOString().slice(0, 10),
+          expiryDate: new Date(Date.now() + 15 * 365 * 86400000).toISOString().slice(0, 10),
+          status: 'Valid',
+          fileName: `RC_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
+          issuingAuthority: 'Regional Transport Office'
+        });
+      }
+      if (hasInsurance) {
+        addDocument({
+          vehicleId: newVeh.id,
+          documentType: 'Insurance Policy',
+          documentNumber: `INS-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
+          issueDate: new Date().toISOString().slice(0, 10),
+          expiryDate: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
+          status: 'Valid',
+          fileName: `INSURANCE_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
+          issuingAuthority: 'Comprehensive Fleet Cover Corp'
+        });
+      }
+      if (hasPUC) {
+        addDocument({
+          vehicleId: newVeh.id,
+          documentType: 'PUC / Emission Certificate',
+          documentNumber: `PUC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+          issueDate: new Date().toISOString().slice(0, 10),
+          expiryDate: new Date(Date.now() + 180 * 86400000).toISOString().slice(0, 10),
+          status: 'Valid',
+          fileName: `PUC_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
+          issuingAuthority: 'Transport Emission Bureau'
+        });
+      }
+      if (hasFitness) {
+        addDocument({
+          vehicleId: newVeh.id,
+          documentType: 'Fitness Certificate',
+          documentNumber: `FC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+          issueDate: new Date().toISOString().slice(0, 10),
+          expiryDate: new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10),
+          status: 'Valid',
+          fileName: `FITNESS_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
+          issuingAuthority: 'RTO Commercial Fitness'
+        });
+      }
+      if (hasPermit) {
+        addDocument({
+          vehicleId: newVeh.id,
+          documentType: 'Commercial Permit',
+          documentNumber: `NP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+          issueDate: new Date().toISOString().slice(0, 10),
+          expiryDate: new Date(Date.now() + 1825 * 86400000).toISOString().slice(0, 10),
+          status: 'Valid',
+          fileName: `PERMIT_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
+          issuingAuthority: 'Ministry of Road Transport'
+        });
+      }
     }
     onClose();
   };
@@ -511,6 +573,23 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
                 className="rounded-sm text-amber-600 focus:ring-amber-500"
               />
               Fitness Certificate
+            </label>
+            <label className="inline-flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasPermit}
+                onChange={e => setHasPermit(e.target.checked)}
+                className="rounded-sm text-amber-600 focus:ring-amber-500"
+              />
+              Commercial Permit
+            </label>
+            <label className="inline-flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                defaultChecked={false}
+                className="rounded-sm text-amber-600 focus:ring-amber-500"
+              />
+              Other Documents (Toll FASTag / Warranty)
             </label>
           </div>
         </div>

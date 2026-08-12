@@ -12,13 +12,15 @@ import {
   ChevronRight,
   Sparkles,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Edit2
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { formatCurrency, formatDistance, formatDate } from '../../utils/formatters';
 import { AddServiceModal } from './AddServiceModal';
 import { AddScheduleModal } from './AddScheduleModal';
+import { MaintenanceRecord } from '../../types';
 
 export const MaintenanceView: React.FC = () => {
   const {
@@ -38,6 +40,7 @@ export const MaintenanceView: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [isAddScheduleOpen, setIsAddScheduleOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
+  const [recordToEdit, setRecordToEdit] = useState<MaintenanceRecord | null>(null);
 
   // Filtered maintenance records
   const filteredRecords = maintenanceRecords.filter(r => {
@@ -235,17 +238,29 @@ export const MaintenanceView: React.FC = () => {
                           </td>
 
                           <td className="py-3.5 px-4 text-right">
-                            <button
-                              onClick={() => {
-                                if (confirm(`Delete service record for "${rec.title}"?`)) {
-                                  deleteMaintenanceRecord(rec.id);
-                                }
-                              }}
-                              className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
-                              title="Delete Record"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  setRecordToEdit(rec);
+                                  setIsAddServiceOpen(true);
+                                }}
+                                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
+                                title="Edit Record"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Delete service record for "${rec.title}"?`)) {
+                                    deleteMaintenanceRecord(rec.id);
+                                  }
+                                }}
+                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                                title="Delete Record"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -369,8 +384,12 @@ export const MaintenanceView: React.FC = () => {
       {/* Add Service Modal */}
       <AddServiceModal
         isOpen={isAddServiceOpen}
-        onClose={() => setIsAddServiceOpen(false)}
+        onClose={() => {
+          setIsAddServiceOpen(false);
+          setRecordToEdit(null);
+        }}
         presetVehicleId={presetVehicleId}
+        recordToEdit={recordToEdit}
       />
 
       {/* Add Schedule Modal */}

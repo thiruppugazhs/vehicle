@@ -50,9 +50,9 @@ interface FleetContextType {
   isAddExpenseOpen: boolean;
   setIsAddExpenseOpen: (open: boolean, presetVehicleId?: string) => void;
   isAuthModalOpen: boolean;
-  setIsAuthModalOpen: (open: boolean, mode?: 'login' | 'signup' | 'forgot') => void;
-  authMode: 'login' | 'signup' | 'forgot';
-  setAuthMode: (mode: 'login' | 'signup' | 'forgot') => void;
+  setIsAuthModalOpen: (open: boolean, mode?: 'login' | 'signup' | 'forgot' | 'reset') => void;
+  authMode: 'login' | 'signup' | 'forgot' | 'reset';
+  setAuthMode: (mode: 'login' | 'signup' | 'forgot' | 'reset') => void;
   isOnboardingActive: boolean;
   setIsOnboardingActive: (active: boolean) => void;
   presetVehicleId: string | undefined;
@@ -145,7 +145,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isReportIssueOpen, setIsReportIssueOpenState] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpenState] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [isOnboardingActive, setIsOnboardingActive] = useState(false);
   const [presetVehicleId, setPresetVehicleId] = useState<string | undefined>(undefined);
 
