@@ -11,3 +11,6 @@ Health scores scale from 0 to 100 with dynamic overdue penalties and repair dedu
 
 ## 4. Predictive Reminder Heuristics
 Reminders evaluate calendar days and mileage thresholds simultaneously.
+
+## 5. Persistence Layer
+Optimistic local updates synchronize seamlessly with JSON backup snapshots.
