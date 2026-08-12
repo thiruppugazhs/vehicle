@@ -8,3 +8,6 @@ Centralized reactive state store manages vehicles, services, repairs, and docume
 
 ## 3. Health Scoring Engine
 Health scores scale from 0 to 100 with dynamic overdue penalties and repair deductions.
+
+## 4. Predictive Reminder Heuristics
+Reminders evaluate calendar days and mileage thresholds simultaneously.
