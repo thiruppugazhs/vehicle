@@ -9,3 +9,7 @@
 ### Maintenance Endpoint
 - `GET /api/v1/maintenance`: Retrieve service records.
 - `POST /api/v1/maintenance`: Log completed maintenance with parts.
+
+### Repairs Endpoint
+- `GET /api/v1/repairs`: Active breakdown tickets.
+- `POST /api/v1/repairs`: Report new mechanical issue.
