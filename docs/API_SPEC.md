@@ -13,3 +13,7 @@
 ### Repairs Endpoint
 - `GET /api/v1/repairs`: Active breakdown tickets.
 - `POST /api/v1/repairs`: Report new mechanical issue.
+
+### Documents Endpoint
+- `GET /api/v1/documents`: Compliance certificates and countdowns.
+- `POST /api/v1/documents`: Upload verified PDF certificate.
