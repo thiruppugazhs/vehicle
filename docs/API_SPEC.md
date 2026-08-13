@@ -5,3 +5,7 @@
 ### Vehicles Endpoint
 - `GET /api/v1/vehicles`: Query fleet inventory with filtering.
 - `POST /api/v1/vehicles`: Register new fleet asset.
+
+### Maintenance Endpoint
+- `GET /api/v1/maintenance`: Retrieve service records.
+- `POST /api/v1/maintenance`: Log completed maintenance with parts.
