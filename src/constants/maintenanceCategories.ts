@@ -24,3 +24,12 @@ export const RECOMMENDED_INTERVALS: Record<string, { months: number; km: number 
   "Tyre Rotation": { months: 6, km: 10000 },
   "General Service": { months: 12, km: 20000 }
 };
+
+export const COMMON_PARTS_CATALOG = [
+  "Fully Synthetic 5W-30 Oil (4.5L)",
+  "OEM Spin-on Oil Filter",
+  "High-Flow Air Filter Element",
+  "Ceramic Front Brake Pads",
+  "Rear Brake Shoe Assembly",
+  "Coolant Premix (50/50)"
+];
