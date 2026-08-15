@@ -37,3 +37,10 @@ export const getDaysDifference = (targetDateStr: string): number => {
   const diffTime = target.getTime() - today.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
+
+export function formatCompactCurrency(amount: number, symbol = "₹"): string {
+  if (amount >= 10000000) return `${symbol}${(amount / 10000000).toFixed(2)} Cr`;
+  if (amount >= 100000) return `${symbol}${(amount / 100000).toFixed(2)} L`;
+  if (amount >= 1000) return `${symbol}${(amount / 1000).toFixed(1)}k`;
+  return `${symbol}${amount.toLocaleString("en-IN")}`;
+}
