@@ -5,3 +5,9 @@ export function getRelativeTimeSpan(targetDate: string): string {
   if (days === 0) return "Due today";
   return `Due in ${days} days`;
 }
+
+export function addMonthsToDate(dateStr: string, months: number): string {
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString().slice(0, 10);
+}
