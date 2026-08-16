@@ -15,3 +15,10 @@ it("penalizes score heavily when maintenance is overdue", () => {
   const score = calculateVehicleHealthScore(mockVeh, [], overdueReminders, []);
   expect(score).toBeLessThan(75);
 });
+
+it("penalizes score when critical repairs are unresolved", () => {
+  const mockVeh = { currentOdometer: 30000, year: 2023 } as any;
+  const criticalRepairs = [{ id: "r1", severity: "Critical", status: "Reported" }] as any;
+  const score = calculateVehicleHealthScore(mockVeh, criticalRepairs, [], []);
+  expect(score).toBeLessThan(70);
+});
