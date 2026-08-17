@@ -16,3 +16,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Built FleetContext reactive state management with localStorage persistence.
 - Implemented dynamic vehicle health calculation algorithm (0-100 scale).
+
+## [0.4.0] - 2026-08-18
+### Added
+- Vehicles management module with dual Grid and Table view modes.
+- Multi-parameter filters for status, vehicle type, fuel type, and manufacturer.
