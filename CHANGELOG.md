@@ -21,3 +21,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Vehicles management module with dual Grid and Table view modes.
 - Multi-parameter filters for status, vehicle type, fuel type, and manufacturer.
+
+## [0.5.0] - 2026-08-20
+### Added
+- Maintenance management module supporting 17 standard service categories.
+- Recurring service schedule engine with automatic next due projections.
