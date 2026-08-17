@@ -11,3 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Comprehensive TypeScript domain models for Vehicles, Services, Repairs, and Reminders.
 - Seeded hyper-realistic dataset with 6 diverse commercial and personal vehicles.
+
+## [0.3.0] - 2026-08-15
+### Added
+- Built FleetContext reactive state management with localStorage persistence.
+- Implemented dynamic vehicle health calculation algorithm (0-100 scale).
