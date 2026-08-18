@@ -26,3 +26,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Maintenance management module supporting 17 standard service categories.
 - Recurring service schedule engine with automatic next due projections.
+
+## [0.6.0] - 2026-08-22
+### Added
+- Dual-trigger smart reminders engine (calendar days + odometer).
+- 4-tier reminder priority system (Low, Medium, High, Critical).
