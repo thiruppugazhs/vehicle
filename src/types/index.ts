@@ -295,3 +295,10 @@ export interface FleetBenchmarkKPIs {
   averageFleetAge: number;
   costPerOperatingDay: number;
 }
+
+export interface MaintenanceRuleTemplate {
+  name: string;
+  defaultIntervalMonths: number;
+  defaultIntervalKm: number;
+  category: MaintenanceCategory;
+}
