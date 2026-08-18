@@ -288,3 +288,10 @@ export interface ActivityItem {
 
 // Activity stream category filters
 export type ActivityCategory = "all" | "service" | "repair" | "expense" | "vehicle" | "document";
+
+export interface FleetBenchmarkKPIs {
+  averageDowntimeDays: number;
+  preventativeRatio: number;
+  averageFleetAge: number;
+  costPerOperatingDay: number;
+}
