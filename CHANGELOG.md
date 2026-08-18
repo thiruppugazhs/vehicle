@@ -31,3 +31,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Dual-trigger smart reminders engine (calendar days + odometer).
 - 4-tier reminder priority system (Low, Medium, High, Critical).
+
+## [0.7.0] - 2026-08-24
+### Added
+- Repairs and breakdown management board with ticket status lifecycle.
+- Vehicle downtime tracker and cost aggregation.
