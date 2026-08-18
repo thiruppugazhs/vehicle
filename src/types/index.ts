@@ -285,3 +285,6 @@ export interface ActivityItem {
   cost?: number;
   status?: string;
 }
+
+// Activity stream category filters
+export type ActivityCategory = "all" | "service" | "repair" | "expense" | "vehicle" | "document";
