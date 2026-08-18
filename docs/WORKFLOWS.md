@@ -10,3 +10,9 @@
 2. Vehicle checked into authorized service center.
 3. Labor, replaced components, and digital invoice recorded.
 4. Reminder marked completed and next cycle projected.
+
+## 3. Breakdown & Repair Lifecycle
+- Driver reports issue $\to$ Ticket created (Status: Reported)
+- Workshop assigns technician $\to$ Status: In Repair
+- Quality assurance test $\to$ Status: Quality Check
+- Invoice recorded $\to$ Status: Resolved (Downtime closed)
