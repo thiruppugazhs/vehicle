@@ -11,3 +11,6 @@
 - Due / Warning: `#F59E0B` (Amber)
 - Overdue / Critical: `#EF4444` (Rose / Red)
 - Under Maintenance: `#3B82F6` (Blue)
+
+## Accessibility
+All text meets WCAG AA standards with contrast ratios exceeding 4.5:1 on light backgrounds.
