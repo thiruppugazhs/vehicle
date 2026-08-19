@@ -36,3 +36,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Repairs and breakdown management board with ticket status lifecycle.
 - Vehicle downtime tracker and cost aggregation.
+
+## [0.8.0] - 2026-08-26
+### Added
+- Expense tracking with fuel volume (L) and price per liter calculations.
+- Recharts pie and bar distribution for fleet expenditure.
