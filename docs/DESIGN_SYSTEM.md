@@ -14,3 +14,8 @@
 
 ## Accessibility
 All text meets WCAG AA standards with contrast ratios exceeding 4.5:1 on light backgrounds.
+
+## Grid & Breakpoints
+- Mobile: `< 640px` (Single column cards, slide-out navigation)
+- Tablet: `640px - 1024px` (2-column layout)
+- Desktop: `> 1024px` (Fixed enterprise sidebar, high-density tables)
