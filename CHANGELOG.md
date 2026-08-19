@@ -41,3 +41,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Expense tracking with fuel volume (L) and price per liter calculations.
 - Recharts pie and bar distribution for fleet expenditure.
+
+## [0.9.0] - 2026-08-28
+### Added
+- Centralized compliance vault for RC, Insurance, PUC, and Fitness certificates.
+- Expiry day countdowns and early renewal alerts.
