@@ -46,3 +46,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Centralized compliance vault for RC, Insurance, PUC, and Fitness certificates.
 - Expiry day countdowns and early renewal alerts.
+
+## [1.0.0] - 2026-08-30
+### Added
+- Executive analytics dashboard with spend trends and vehicle downtime rankings.
+- Printable maintenance report view, CSV export, and complete JSON database backup.
