@@ -15,3 +15,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 8**: chore(core): perform clean code refactoring and dependency auditing (#72) (2026-08-21)
 - **Sprint 8**: refactor(vehicles): streamline domain helper contracts and clean up redundant types (#73) (2026-08-22)
 - **Sprint 8**: perf(maintenance): optimize rendering memoization and state selector efficiency (#74) (2026-08-22)
+- **Sprint 8**: style(repairs): polish light-theme padding, subtle border contrast, and typography (#75) (2026-08-22)
