@@ -25,3 +25,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 9**: perf(settings): optimize rendering memoization and state selector efficiency (#82) (2026-08-23)
 - **Sprint 9**: style(auth): polish light-theme padding, subtle border contrast, and typography (#83) (2026-08-23)
 - **Sprint 9**: test(core): expand automated unit coverage for edge case scenarios (#84) (2026-08-23)
+- **Sprint 9**: docs(vehicles): expand JSDoc inline documentation and code examples (#85) (2026-08-23)
