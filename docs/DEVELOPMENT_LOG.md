@@ -27,3 +27,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 9**: test(core): expand automated unit coverage for edge case scenarios (#84) (2026-08-23)
 - **Sprint 9**: docs(vehicles): expand JSDoc inline documentation and code examples (#85) (2026-08-23)
 - **Sprint 9**: feat(maintenance): enhance diagnostic metadata and telemetry properties (#86) (2026-08-23)
+- **Sprint 9**: fix(repairs): safeguard nullish edge cases during deep property access (#87) (2026-08-23)
