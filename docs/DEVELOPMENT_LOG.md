@@ -41,3 +41,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 10**: perf(maintenance): optimize rendering memoization and state selector efficiency (#98) (2026-08-25)
 - **Sprint 10**: style(repairs): polish light-theme padding, subtle border contrast, and typography (#99) (2026-08-25)
 - **Sprint 10**: test(expenses): expand automated unit coverage for edge case scenarios (#100) (2026-08-25)
+- **Sprint 11**: docs(reminders): expand JSDoc inline documentation and code examples (#101) (2026-08-25)
