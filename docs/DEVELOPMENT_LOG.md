@@ -48,3 +48,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 11**: refactor(dashboard): streamline domain helper contracts and clean up redundant types (#105) (2026-08-26)
 - **Sprint 11**: perf(settings): optimize rendering memoization and state selector efficiency (#106) (2026-08-26)
 - **Sprint 11**: style(auth): polish light-theme padding, subtle border contrast, and typography (#107) (2026-08-26)
+- **Sprint 11**: test(core): expand automated unit coverage for edge case scenarios (#108) (2026-08-26)
