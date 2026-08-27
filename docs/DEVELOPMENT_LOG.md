@@ -55,3 +55,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 12**: chore(expenses): perform clean code refactoring and dependency auditing (#112) (2026-08-27)
 - **Sprint 12**: refactor(reminders): streamline domain helper contracts and clean up redundant types (#113) (2026-08-27)
 - **Sprint 12**: perf(documents): optimize rendering memoization and state selector efficiency (#114) (2026-08-27)
+- **Sprint 12**: style(drivers): polish light-theme padding, subtle border contrast, and typography (#115) (2026-08-27)
