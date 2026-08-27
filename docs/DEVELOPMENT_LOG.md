@@ -52,3 +52,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 11**: docs(vehicles): expand JSDoc inline documentation and code examples (#109) (2026-08-26)
 - **Sprint 11**: feat(maintenance): enhance diagnostic metadata and telemetry properties (#110) (2026-08-26)
 - **Sprint 12**: fix(repairs): safeguard nullish edge cases during deep property access (#111) (2026-08-27)
+- **Sprint 12**: chore(expenses): perform clean code refactoring and dependency auditing (#112) (2026-08-27)
