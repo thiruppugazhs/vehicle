@@ -59,3 +59,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 12**: test(analytics): expand automated unit coverage for edge case scenarios (#116) (2026-08-27)
 - **Sprint 12**: docs(dashboard): expand JSDoc inline documentation and code examples (#117) (2026-08-27)
 - **Sprint 12**: feat(settings): enhance diagnostic metadata and telemetry properties (#118) (2026-08-28)
+- **Sprint 12**: fix(auth): safeguard nullish edge cases during deep property access (#119) (2026-08-28)
