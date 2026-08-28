@@ -61,3 +61,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 12**: feat(settings): enhance diagnostic metadata and telemetry properties (#118) (2026-08-28)
 - **Sprint 12**: fix(auth): safeguard nullish edge cases during deep property access (#119) (2026-08-28)
 - **Sprint 12**: chore(core): perform clean code refactoring and dependency auditing (#120) (2026-08-28)
+- **Sprint 13**: refactor(vehicles): streamline domain helper contracts and clean up redundant types (#121) (2026-08-28)
