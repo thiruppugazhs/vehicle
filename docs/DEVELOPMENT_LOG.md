@@ -78,3 +78,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 14**: fix(repairs): safeguard nullish edge cases during deep property access (#135) (2026-08-30)
 - **Sprint 14**: chore(expenses): perform clean code refactoring and dependency auditing (#136) (2026-08-30)
 - **Sprint 14**: refactor(reminders): streamline domain helper contracts and clean up redundant types (#137) (2026-08-30)
+- **Sprint 14**: perf(documents): optimize rendering memoization and state selector efficiency (#138) (2026-08-30)
