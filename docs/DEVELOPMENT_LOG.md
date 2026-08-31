@@ -82,3 +82,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 14**: style(drivers): polish light-theme padding, subtle border contrast, and typography (#139) (2026-08-30)
 - **Sprint 14**: test(analytics): expand automated unit coverage for edge case scenarios (#140) (2026-08-30)
 - **Sprint 15**: docs(dashboard): expand JSDoc inline documentation and code examples (#141) (2026-08-31)
+- **Sprint 15**: feat(settings): enhance diagnostic metadata and telemetry properties (#142) (2026-08-31)
