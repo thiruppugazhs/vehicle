@@ -84,3 +84,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 15**: docs(dashboard): expand JSDoc inline documentation and code examples (#141) (2026-08-31)
 - **Sprint 15**: feat(settings): enhance diagnostic metadata and telemetry properties (#142) (2026-08-31)
 - **Sprint 15**: fix(auth): safeguard nullish edge cases during deep property access (#143) (2026-08-31)
+- **Sprint 15**: chore(core): perform clean code refactoring and dependency auditing (#144) (2026-08-31)
