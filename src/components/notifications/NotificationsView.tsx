@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { NotificationType } from '../../types';
+import { EmptyState } from '../common/EmptyState';
 
 export const NotificationsView: React.FC = () => {
   const {
@@ -133,10 +134,18 @@ export const NotificationsView: React.FC = () => {
       {/* Notifications List */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs divide-y divide-slate-100 overflow-hidden">
         {filteredNotifications.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-400">
-            <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-            <p className="font-semibold">No notifications match your current filter.</p>
-          </div>
+          <EmptyState
+            icon={Bell}
+            title="No Notifications Found"
+            description="You are fully caught up! There are no outstanding service alerts or statutory notices."
+            actionLabel="Configure Preferences"
+            onAction={() => setIsNotificationPreferencesOpen(true)}
+            secondaryActionLabel={filterType !== 'ALL' || unreadOnly ? 'Reset Filters' : undefined}
+            onSecondaryAction={() => {
+              setFilterType('ALL');
+              setUnreadOnly(false);
+            }}
+          />
         ) : (
           filteredNotifications.map(n => (
             <div

@@ -310,6 +310,7 @@ export const initialVehicles: Vehicle[] = [
   },
   {
     id: 'veh_06',
+    organizationId: 'org_02',
     registrationNumber: 'KA 05 JK 4499',
     name: 'BharatBenz Heavy Hauler #02',
     type: 'Heavy Commercial Truck',

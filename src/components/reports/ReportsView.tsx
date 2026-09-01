@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { formatCurrency, formatDate } from '../../utils/formatters';
+import { EmptyState } from '../common/EmptyState';
 
 type ReportType =
   | 'Vehicle Maintenance Report'
@@ -323,6 +324,21 @@ export const ReportsView: React.FC = () => {
         </div>
 
         {/* Dynamic Report Table Content */}
+        {reportData.length === 0 ? (
+          <div className="p-8">
+            <EmptyState
+              icon={FileText}
+              title="No Report Data Found"
+              description="There are no records matching your selected report type, date range, and vehicle filter."
+              actionLabel="Reset Filters"
+              onAction={() => {
+                setStartDate('2024-01-01');
+                setEndDate(new Date().toISOString().slice(0, 10));
+                setSelectedVehicleId('ALL');
+              }}
+            />
+          </div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -461,6 +477,7 @@ export const ReportsView: React.FC = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );

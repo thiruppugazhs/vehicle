@@ -20,6 +20,7 @@ import { StatusBadge } from '../common/StatusBadge';
 import { formatCurrency, formatDistance, formatDate } from '../../utils/formatters';
 import { AddServiceModal } from './AddServiceModal';
 import { AddScheduleModal } from './AddScheduleModal';
+import { EmptyState } from '../common/EmptyState';
 import { MaintenanceRecord } from '../../types';
 
 export const MaintenanceView: React.FC = () => {
@@ -149,6 +150,20 @@ export const MaintenanceView: React.FC = () => {
           </div>
 
           {/* Records Table */}
+          {filteredRecords.length === 0 ? (
+            <EmptyState
+              icon={Wrench}
+              title="No Maintenance Records Found"
+              description="No service events match your current search and filters. Log a service to build your vehicle's digital service book."
+              actionLabel="Log Maintenance Service"
+              onAction={() => setIsAddServiceOpen(true)}
+              secondaryActionLabel={searchQuery || selectedCategory !== 'ALL' ? 'Reset Filters' : undefined}
+              onSecondaryAction={() => {
+                setSearchQuery('');
+                setSelectedCategory('ALL');
+              }}
+            />
+          ) : (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -164,14 +179,7 @@ export const MaintenanceView: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
-                  {filteredRecords.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-400">
-                        No service records matched your filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRecords.map(rec => {
+                  {filteredRecords.map(rec => {
                       const veh = vehicles.find(v => v.id === rec.vehicleId);
 
                       return (
@@ -264,12 +272,12 @@ export const MaintenanceView: React.FC = () => {
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             </div>
           </div>
+          )}
         </div>
       )}
 

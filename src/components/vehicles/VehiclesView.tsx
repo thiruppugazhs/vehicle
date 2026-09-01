@@ -28,6 +28,7 @@ import { formatDistance, formatDate } from '../../utils/formatters';
 import { Vehicle, VehicleStatus, VehicleType, FuelType } from '../../types';
 import { AddEditVehicleModal } from './AddEditVehicleModal';
 import { ImportVehiclesModal } from './ImportVehiclesModal';
+import { EmptyState } from '../common/EmptyState';
 
 export const VehiclesView: React.FC = () => {
   const {
@@ -324,25 +325,24 @@ export const VehiclesView: React.FC = () => {
 
       {/* Grid or Table View */}
       {filteredVehicles.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-2xs">
-          <Car className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800">No matching vehicles found</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            Try adjusting your search query or reset the filters to see all fleet assets.
-          </p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setStatusFilter('ALL');
-              setTypeFilter('ALL');
-              setFuelFilter('ALL');
-              setManufacturerFilter('ALL');
-            }}
-            className="mt-4 px-4 py-2 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold hover:bg-amber-100"
-          >
-            Reset Filters
-          </button>
-        </div>
+        <EmptyState
+          icon={Car}
+          title="No Matching Vehicles Found"
+          description="No fleet assets match your search query and filters. Adjust your filters or register a new vehicle."
+          actionLabel="Add New Vehicle"
+          onAction={() => {
+            setVehicleToEdit(null);
+            setIsAddModalOpen(true);
+          }}
+          secondaryActionLabel={searchQuery || statusFilter !== 'ALL' || typeFilter !== 'ALL' || fuelFilter !== 'ALL' || manufacturerFilter !== 'ALL' ? 'Reset Filters' : undefined}
+          onSecondaryAction={() => {
+            setSearchQuery('');
+            setStatusFilter('ALL');
+            setTypeFilter('ALL');
+            setFuelFilter('ALL');
+            setManufacturerFilter('ALL');
+          }}
+        />
       ) : viewMode === 'grid' ? (
         /* Section 12: VEHICLE CARDS GRID */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

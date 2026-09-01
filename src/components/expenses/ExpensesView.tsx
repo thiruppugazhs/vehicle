@@ -33,6 +33,7 @@ import {
 import { useFleet } from '../../context/FleetContext';
 import { formatCurrency, formatDistance, formatDate } from '../../utils/formatters';
 import { Modal } from '../common/Modal';
+import { EmptyState } from '../common/EmptyState';
 import { ExpenseCategory, PaymentMethod } from '../../types';
 
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
@@ -372,6 +373,20 @@ export const ExpensesView: React.FC = () => {
       </div>
 
       {/* Expense Records Table */}
+      {filteredExpenses.length === 0 ? (
+        <EmptyState
+          icon={Receipt}
+          title="No Expense Records Found"
+          description="There are no expense transactions matching your selected filters."
+          actionLabel="Log New Expense"
+          onAction={() => setIsAddExpenseOpen(true)}
+          secondaryActionLabel={searchQuery || selectedCategory !== 'ALL' ? 'Reset Filters' : undefined}
+          onSecondaryAction={() => {
+            setSearchQuery('');
+            setSelectedCategory('ALL');
+          }}
+        />
+      ) : (
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
@@ -464,6 +479,7 @@ export const ExpensesView: React.FC = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Requirement 26: Log Expense Modal with all required fields */}
       <Modal

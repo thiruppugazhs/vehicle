@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { Modal } from '../common/Modal';
+import { EmptyState } from '../common/EmptyState';
 import { ServiceCenter } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
@@ -151,6 +152,17 @@ export const ServiceCentersView: React.FC = () => {
       </div>
 
       {/* Grid */}
+      {filteredCenters.length === 0 ? (
+        <EmptyState
+          icon={Building2}
+          title="No Service Centers Found"
+          description="There are no partner workshops matching your search keywords."
+          actionLabel="Add Service Center"
+          onAction={() => setIsAddCenterOpen(true)}
+          secondaryActionLabel={searchQuery ? 'Clear Search' : undefined}
+          onSecondaryAction={() => setSearchQuery('')}
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {filteredCenters.map(sc => {
           const assoc = getAssociatedRecords(sc);
@@ -260,6 +272,7 @@ export const ServiceCentersView: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Requirement 32: Add Service Center Modal with all fields */}
       <Modal

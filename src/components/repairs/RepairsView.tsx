@@ -24,6 +24,7 @@ import {
 import { useFleet } from '../../context/FleetContext';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { Modal } from '../common/Modal';
+import { EmptyState } from '../common/EmptyState';
 import { RepairSeverity, RepairStatus, RepairTicket } from '../../types';
 
 const REPAIR_STAGES: RepairStatus[] = [
@@ -318,7 +319,22 @@ export const RepairsView: React.FC = () => {
       </div>
 
       {/* Repair Tickets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {filteredRepairs.length === 0 ? (
+        <EmptyState
+          icon={AlertTriangle}
+          title="No Repair Tickets Found"
+          description="There are no active or historical repair tickets matching your filter criteria."
+          actionLabel="Report New Issue"
+          onAction={() => setIsReportIssueOpen(true)}
+          secondaryActionLabel={searchQuery || statusFilter !== 'ALL' || severityFilter !== 'ALL' ? 'Reset Filters' : undefined}
+          onSecondaryAction={() => {
+            setSearchQuery('');
+            setStatusFilter('ALL');
+            setSeverityFilter('ALL');
+          }}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredRepairs.map(repair => {
           const veh = vehicles.find(v => v.id === repair.vehicleId);
           const nextStage = getNextStage(repair.status);
@@ -480,6 +496,7 @@ export const RepairsView: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Requirement 23: Quick Report Issue Modal */}
       <Modal
