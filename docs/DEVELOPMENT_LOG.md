@@ -89,3 +89,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 15**: perf(maintenance): optimize rendering memoization and state selector efficiency (#146) (2026-08-31)
 - **Sprint 15**: style(repairs): polish light-theme padding, subtle border contrast, and typography (#147) (2026-08-31)
 - **Sprint 15**: test(expenses): expand automated unit coverage for edge case scenarios (#148) (2026-09-01)
+- **Sprint 15**: docs(reminders): expand JSDoc inline documentation and code examples (#149) (2026-09-01)
