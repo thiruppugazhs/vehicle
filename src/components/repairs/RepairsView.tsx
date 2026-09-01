@@ -17,7 +17,9 @@ import {
   Eye,
   Building2,
   User,
-  Gauge
+  Gauge,
+  Trash2,
+  Edit3
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { formatCurrency, formatDate } from '../../utils/formatters';
@@ -53,6 +55,7 @@ export const RepairsView: React.FC = () => {
     repairs,
     addRepairTicket,
     updateRepairTicket,
+    deleteRepairTicket,
     moveRepairStage,
     isReportIssueOpen,
     setIsReportIssueOpen,
@@ -434,14 +437,26 @@ export const RepairsView: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRepair(repair)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  View Details
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRepair(repair)}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 p-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    View Details
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Delete repair ticket ${repair.id}?`)) deleteRepairTicket(repair.id);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                    title="Delete Repair Ticket"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
                 {/* Advance Stage Button (Requirement 22) */}
                 {nextStage && (
@@ -721,6 +736,36 @@ export const RepairsView: React.FC = () => {
                   <span className="font-black text-sm text-slate-900">
                     {selectedRepair.actualCost ? formatCurrency(selectedRepair.actualCost, userProfile.currency) : 'Pending'}
                   </span>
+                </div>
+              </div>
+
+              {/* Quick Cost Adjuster to test positive, negative, and zero variance */}
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                <div className="flex-1">
+                  <label className="text-[10px] text-slate-500 font-bold block mb-1">Edit Approved Cost ({userProfile.currency})</label>
+                  <input
+                    type="number"
+                    defaultValue={selectedRepair.approvedCost ?? 0}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      updateRepairTicket(selectedRepair.id, { approvedCost: val });
+                      setSelectedRepair(prev => prev ? { ...prev, approvedCost: val } : null);
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:bg-white focus:outline-hidden focus:border-amber-500"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] text-slate-500 font-bold block mb-1">Edit Actual Cost ({userProfile.currency})</label>
+                  <input
+                    type="number"
+                    defaultValue={selectedRepair.actualCost ?? 0}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      updateRepairTicket(selectedRepair.id, { actualCost: val });
+                      setSelectedRepair(prev => prev ? { ...prev, actualCost: val } : null);
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:bg-white focus:outline-hidden focus:border-amber-500"
+                  />
                 </div>
               </div>
 

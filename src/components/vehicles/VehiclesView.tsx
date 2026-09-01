@@ -40,7 +40,9 @@ export const VehiclesView: React.FC = () => {
     setIsReportIssueOpen,
     setIsAddExpenseOpen,
     userProfile,
-    exportVehiclesCSV
+    exportVehiclesCSV,
+    fleetHealthFilter,
+    setFleetHealthFilter
   } = useFleet();
 
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -96,14 +98,24 @@ export const VehiclesView: React.FC = () => {
       // Manufacturer filter
       const matchesMake = manufacturerFilter === 'ALL' || v.manufacturer === manufacturerFilter;
 
-      return matchesSearch && matchesStatus && matchesServiceStatus && matchesType && matchesFuel && matchesMake;
+      // Fleet Health filter (Requirement 34)
+      let matchesFleetHealth = true;
+      if (fleetHealthFilter === 'Excellent') {
+        matchesFleetHealth = v.healthScore >= 80;
+      } else if (fleetHealthFilter === 'Needs Attention') {
+        matchesFleetHealth = v.healthScore >= 60 && v.healthScore < 80;
+      } else if (fleetHealthFilter === 'Critical') {
+        matchesFleetHealth = v.healthScore < 60;
+      }
+
+      return matchesSearch && matchesStatus && matchesServiceStatus && matchesType && matchesFuel && matchesMake && matchesFleetHealth;
     }).sort((a, b) => {
       if (sortBy === 'health') return a.healthScore - b.healthScore; // most critical first
       if (sortBy === 'odometer') return b.currentOdometer - a.currentOdometer;
       if (sortBy === 'year') return b.year - a.year;
       return a.registrationNumber.localeCompare(b.registrationNumber);
     });
-  }, [vehicles, searchQuery, statusFilter, serviceStatusFilter, typeFilter, fuelFilter, manufacturerFilter, sortBy, smartReminders]);
+  }, [vehicles, searchQuery, statusFilter, serviceStatusFilter, typeFilter, fuelFilter, manufacturerFilter, sortBy, smartReminders, fleetHealthFilter]);
 
   const handleEdit = (vehicle: Vehicle) => {
     setVehicleToEdit(vehicle);
@@ -160,7 +172,21 @@ export const VehiclesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
+      {/* Active Fleet Health Filter Banner (Requirement 34) */}
+      {fleetHealthFilter !== 'ALL' && (
+        <div className="bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-xl flex items-center justify-between text-xs">
+          <span className="font-bold text-amber-900 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            Filtered by Fleet Health: <strong>{fleetHealthFilter}</strong> ({filteredVehicles.length} vehicles)
+          </span>
+          <button
+            onClick={() => setFleetHealthFilter('ALL')}
+            className="font-bold text-amber-800 hover:text-amber-950 underline cursor-pointer"
+          >
+            Clear Filter (Show All)
+          </button>
+        </div>
+      )}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3.5">
         <div className="flex flex-col md:flex-row items-center gap-3">
           {/* Search box */}

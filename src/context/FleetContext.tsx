@@ -94,6 +94,7 @@ interface FleetContextType {
 
   addRepairTicket: (repair: Omit<RepairTicket, 'id'>) => RepairTicket;
   updateRepairTicket: (id: string, updates: Partial<RepairTicket>) => void;
+  deleteRepairTicket: (id: string) => void;
 
   addExpenseRecord: (expense: Omit<ExpenseRecord, 'id' | 'createdAt'>) => ExpenseRecord;
   deleteExpenseRecord: (id: string) => void;
@@ -104,8 +105,11 @@ interface FleetContextType {
 
   addDriver: (driver: Omit<Driver, 'id'>) => Driver;
   updateDriver: (id: string, updates: Partial<Driver>) => void;
+  deleteDriver: (id: string) => void;
 
   addServiceCenter: (center: Omit<ServiceCenter, 'id'>) => ServiceCenter;
+  updateServiceCenter: (id: string, updates: Partial<ServiceCenter>) => void;
+  deleteServiceCenter: (id: string) => void;
 
   markReminderCompleted: (id: string) => void;
   dismissReminder: (id: string) => void;
@@ -121,6 +125,7 @@ interface FleetContextType {
   setIsNotificationPreferencesOpen: (open: boolean) => void;
   moveRepairStage: (repairId: string, newStage: RepairStatus) => void;
   assignDriver: (vehicleId: string, driverId: string, role: 'Primary' | 'Backup', notes?: string) => void;
+  removeDriverAssignment: (vehicleId: string, role: 'Primary' | 'Backup') => void;
   isGlobalSearchOpen: boolean;
   setIsGlobalSearchOpen: (open: boolean) => void;
   fleetHealthFilter: 'ALL' | 'Excellent' | 'Needs Attention' | 'Critical';
@@ -564,6 +569,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const deleteRepairTicket = (id: string) => {
+    setRepairs(prev => prev.filter(r => r.id !== id));
+  };
+
   const moveRepairStage = (repairId: string, newStage: RepairStatus) => {
     const targetRepair = repairs.find(r => r.id === repairId);
     if (!targetRepair) return;
@@ -579,7 +588,15 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updates.actualCompletion = new Date().toISOString().slice(0, 10);
       }
       if (targetRepair.downtimeStart && !targetRepair.downtimeEnd) {
-        updates.downtimeEnd = new Date().toISOString();
+        const endTime = new Date().toISOString();
+        updates.downtimeEnd = endTime;
+        const startMs = new Date(targetRepair.downtimeStart).getTime();
+        const endMs = new Date(endTime).getTime();
+        const diffHours = Math.max(1, Math.round((endMs - startMs) / (1000 * 60 * 60)));
+        updates.downtimeHours = diffHours;
+        const days = Math.floor(diffHours / 24);
+        const hrs = diffHours % 24;
+        updates.downtimeFormatted = days > 0 ? `${days} day${days > 1 ? 's' : ''} ${hrs} hr${hrs !== 1 ? 's' : ''}` : `${diffHours} hours`;
       }
     }
 
@@ -691,11 +708,23 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setDrivers(prev => prev.map(d => (d.id === id ? { ...d, ...updates } : d)));
   };
 
+  const deleteDriver = (id: string) => {
+    setDrivers(prev => prev.filter(d => d.id !== id));
+  };
+
   const addServiceCenter = (data: Omit<ServiceCenter, 'id'>): ServiceCenter => {
     const id = `sc_${Date.now().toString(36)}`;
     const newCenter: ServiceCenter = { ...data, id };
     setServiceCenters(prev => [...prev, newCenter]);
     return newCenter;
+  };
+
+  const updateServiceCenter = (id: string, updates: Partial<ServiceCenter>) => {
+    setServiceCenters(prev => prev.map(sc => (sc.id === id ? { ...sc, ...updates } : sc)));
+  };
+
+  const deleteServiceCenter = (id: string) => {
+    setServiceCenters(prev => prev.filter(sc => sc.id !== id));
   };
 
   const markReminderCompleted = (id: string) => {
@@ -755,6 +784,19 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       vehicleName: veh.name,
       timestamp: 'Just now'
     }, ...prev]);
+  };
+
+  const removeDriverAssignment = (vehicleId: string, role: 'Primary' | 'Backup') => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    if (!veh) return;
+    const updates: Partial<Vehicle> = {};
+    if (role === 'Primary') {
+      updates.primaryDriverId = undefined;
+      updates.assignedDriverId = undefined;
+    } else {
+      updates.backupDriverId = undefined;
+    }
+    updateVehicle(vehicleId, updates);
   };
 
   // Fleet Analytics & Metrics
@@ -913,6 +955,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateServiceSchedule,
         addRepairTicket,
         updateRepairTicket,
+        deleteRepairTicket,
         addExpenseRecord,
         deleteExpenseRecord,
         addDocument,
@@ -920,7 +963,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteDocument,
         addDriver,
         updateDriver,
+        deleteDriver,
         addServiceCenter,
+        updateServiceCenter,
+        deleteServiceCenter,
         markReminderCompleted,
         dismissReminder,
         markNotificationRead,
@@ -932,6 +978,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateNotificationPreferences,
         moveRepairStage,
         assignDriver,
+        removeDriverAssignment,
         isGlobalSearchOpen,
         setIsGlobalSearchOpen,
         fleetHealthFilter,
