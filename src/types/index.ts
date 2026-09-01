@@ -320,15 +320,21 @@ export interface ServiceCenter {
   isAuthorized?: boolean;
 }
 
+export type OperationalRole = 'Owner' | 'Fleet Manager' | 'Driver' | 'Technician';
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   role: 'Individual Vehicle Owner' | 'Business Owner' | 'Fleet Manager' | 'Transport Company';
+  operationalRole?: OperationalRole; // Requirement 41
   fleetSizeBracket: '1' | '2–5' | '6–20' | '21–50' | '50+';
   currency: string;
   distanceUnit: 'km' | 'miles';
+  dateFormat?: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD'; // Requirement 43 & 60
+  language?: string;
   organizationName?: string;
+  organizationId?: string;
   phone?: string;
   avatarUrl?: string;
   isOnboarded: boolean;
@@ -410,4 +416,65 @@ export interface MaintenanceRuleTemplate {
   defaultIntervalMonths: number;
   defaultIntervalKm: number;
   category: MaintenanceCategory;
+}
+
+// Requirement 42: Organization Support
+export interface Organization {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  address: string;
+  city?: string;
+  contactPhone: string;
+  contactEmail: string;
+  taxId?: string;
+  plan: 'Starter' | 'Growth' | 'Enterprise';
+  createdAt: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organizationId: string;
+  userId: string;
+  name: string;
+  email: string;
+  role: OperationalRole;
+  joinedAt: string;
+  avatarUrl?: string;
+}
+
+// Requirement 47: Audit Log Timeline
+export interface AuditLogEntry {
+  id: string;
+  actorName: string;
+  actorRole: string;
+  action: string; // e.g. "Vehicle created", "Service added", "Repair moved to Completed"
+  entityType: 'Vehicle' | 'Maintenance' | 'Repair' | 'Expense' | 'Document' | 'Driver' | 'Service Center';
+  entityId?: string;
+  entityName?: string;
+  description: string;
+  timestamp: string;
+}
+
+// Requirement 45: Odometer logs
+export interface VehicleOdometerLog {
+  id: string;
+  vehicleId: string;
+  odometer: number;
+  recordedBy: string;
+  date: string;
+  notes?: string;
+}
+
+// Requirement 58: Smart Insights
+export interface SmartInsight {
+  id: string;
+  type: 'cost' | 'repair' | 'schedule' | 'document';
+  title: string;
+  description: string;
+  severity: 'info' | 'warning' | 'critical' | 'positive';
+  metric?: string;
+  trend?: string;
+  actionTab?: string;
+  timestamp: string;
 }

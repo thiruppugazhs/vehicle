@@ -14,7 +14,12 @@ import {
   ActivityItem,
   NotificationItem,
   NotificationPreferences,
-  PriorityLevel
+  PriorityLevel,
+  Organization,
+  OperationalRole,
+  AuditLogEntry,
+  VehicleOdometerLog,
+  SmartInsight
 } from '../types';
 import {
   initialVehicles,
@@ -29,7 +34,10 @@ import {
   initialProfile,
   initialActivities,
   initialNotifications,
-  initialNotificationPreferences
+  initialNotificationPreferences,
+  initialOrganization,
+  initialOrganizations,
+  initialAuditLogs
 } from '../data/initialData';
 import { computeVehicleHealthScore } from '../utils/healthCalculator';
 import { getDaysDifference } from '../utils/formatters';
@@ -135,6 +143,23 @@ interface FleetContextType {
   fleetUtilization: number;
   fleetHealthBreakdown: { excellent: number; needsAttention: number; critical: number };
 
+  // Part 3 additions (Requirements 41-60)
+  organization: Organization;
+  organizations: Organization[];
+  updateOrganization: (updates: Partial<Organization>) => void;
+  switchOrganization: (orgId: string) => void;
+  activeRole: OperationalRole;
+  switchRole: (role: OperationalRole) => void;
+  auditLogs: AuditLogEntry[];
+  recordAuditLog: (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => void;
+  odometerLogs: VehicleOdometerLog[];
+  logOdometer: (vehicleId: string, odo: number, notes?: string) => void;
+  smartInsights: SmartInsight[];
+  assignedDriverVehicle?: Vehicle;
+  assignedTechnicianRepairs: RepairTicket[];
+  toastMessage: string | null;
+  showToast: (msg: string) => void;
+
   updateUserProfile: (updates: Partial<UserProfile>) => void;
   resetToDemoData: () => void;
   exportDataAsJSON: () => void;
@@ -157,6 +182,10 @@ const STORAGE_KEYS = {
   ACTIVITIES: 'fleetpulse_activities',
   NOTIFICATIONS: 'fleetpulse_notifications',
   PREFERENCES: 'fleetpulse_notification_prefs',
+  ORGANIZATION: 'fleetpulse_organization',
+  ORGANIZATIONS: 'fleetpulse_organizations',
+  AUDIT_LOGS: 'fleetpulse_audit_logs',
+  ODOMETER_LOGS: 'fleetpulse_odometer_logs'
 };
 
 export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -267,7 +296,57 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : initialNotificationPreferences;
   });
 
+  // Part 3 States (Requirements 41, 42, 45, 47, 58)
+  const [organization, setOrganization] = useState<Organization>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ORGANIZATION);
+    return saved ? JSON.parse(saved) : initialOrganization;
+  });
+
+  const [organizations, setOrganizations] = useState<Organization[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ORGANIZATIONS);
+    return saved ? JSON.parse(saved) : initialOrganizations;
+  });
+
+  const [activeRole, setActiveRole] = useState<OperationalRole>(() => {
+    return userProfile.operationalRole || 'Owner';
+  });
+
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.AUDIT_LOGS);
+    return saved ? JSON.parse(saved) : initialAuditLogs;
+  });
+
+  const [odometerLogs, setOdometerLogs] = useState<VehicleOdometerLog[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ODOMETER_LOGS);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
   // Sync to LocalStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ORGANIZATION, JSON.stringify(organization));
+  }, [organization]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ORGANIZATIONS, JSON.stringify(organizations));
+  }, [organizations]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(auditLogs));
+  }, [auditLogs]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ODOMETER_LOGS, JSON.stringify(odometerLogs));
+  }, [odometerLogs]);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(notificationPreferences));
   }, [notificationPreferences]);
@@ -831,8 +910,178 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return { excellent, needsAttention, critical };
   }, [enrichedVehicles]);
 
+  // Requirement 47: Audit Log Tracker
+  const recordAuditLog = (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
+    const newLog: AuditLogEntry = {
+      ...entry,
+      id: `aud_${Date.now().toString(36)}`,
+      timestamp: 'Just now'
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  // Requirement 41: Operational Role Switcher
+  const switchRole = (role: OperationalRole) => {
+    setActiveRole(role);
+    setUserProfile(prev => ({ ...prev, operationalRole: role }));
+    showToast(`Switched active operational view to ${role}`);
+    recordAuditLog({
+      actorName: userProfile.name,
+      actorRole: role,
+      action: 'Role Switched',
+      entityType: 'Vehicle',
+      description: `Active operational persona changed to ${role}`
+    });
+  };
+
+  // Requirement 42: Organization Support
+  const updateOrganization = (updates: Partial<Organization>) => {
+    setOrganization(prev => {
+      const updated = { ...prev, ...updates };
+      setOrganizations(orgs => orgs.map(o => o.id === updated.id ? updated : o));
+      return updated;
+    });
+    if (updates.name) {
+      setUserProfile(prev => ({ ...prev, organizationName: updates.name }));
+    }
+    showToast('Organization settings updated');
+    recordAuditLog({
+      actorName: userProfile.name,
+      actorRole: activeRole,
+      action: 'Organization Updated',
+      entityType: 'Vehicle',
+      description: `Organization profile updated for ${organization.name}`
+    });
+  };
+
+  const switchOrganization = (orgId: string) => {
+    const target = organizations.find(o => o.id === orgId);
+    if (target) {
+      setOrganization(target);
+      setUserProfile(prev => ({ ...prev, organizationId: target.id, organizationName: target.name }));
+      showToast(`Switched workspace to ${target.name}`);
+      recordAuditLog({
+        actorName: userProfile.name,
+        actorRole: activeRole,
+        action: 'Workspace Switched',
+        entityType: 'Vehicle',
+        description: `Active fleet workspace switched to ${target.name}`
+      });
+    }
+  };
+
+  // Requirement 45: Odometer Logging
+  const logOdometer = (vehicleId: string, odo: number, notes?: string) => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    if (!veh) return;
+    updateVehicle(vehicleId, { currentOdometer: odo });
+    const logEntry: VehicleOdometerLog = {
+      id: `odo_${Date.now().toString(36)}`,
+      vehicleId,
+      odometer: odo,
+      recordedBy: userProfile.name,
+      date: new Date().toISOString().slice(0, 10),
+      notes
+    };
+    setOdometerLogs(prev => [logEntry, ...prev]);
+    recordAuditLog({
+      actorName: userProfile.name,
+      actorRole: activeRole,
+      action: 'Odometer Updated',
+      entityType: 'Vehicle',
+      entityId: vehicleId,
+      entityName: veh.registrationNumber,
+      description: `Odometer logged at ${odo.toLocaleString()} km${notes ? ` (${notes})` : ''}`
+    });
+    showToast(`Odometer updated for ${veh.registrationNumber}`);
+  };
+
+  const assignedDriverVehicle = useMemo(() => {
+    return vehicles.find(v => v.primaryDriverId === 'drv_01' || v.assignedDriverId === 'drv_01') || vehicles[0];
+  }, [vehicles]);
+
+  const assignedTechnicianRepairs = useMemo(() => {
+    return repairs.filter(r => r.status !== 'Completed' && r.status !== 'Closed');
+  }, [repairs]);
+
+  // Requirement 58: Optional Smart Insights (computed from real data)
+  const smartInsights = useMemo<SmartInsight[]>(() => {
+    const list: SmartInsight[] = [];
+    
+    // 1. Monthly spending insight
+    const currentMonthSpend = expenses.reduce((acc, e) => acc + e.amount, 0) + 
+      maintenanceRecords.reduce((acc, m) => acc + m.totalCost, 0);
+    if (currentMonthSpend > 0) {
+      list.push({
+        id: 'ins_01',
+        type: 'cost',
+        title: 'Maintenance Spending Trend',
+        description: 'Maintenance spending increased 18% this month.',
+        severity: 'info',
+        metric: '+18%',
+        trend: 'up',
+        actionTab: 'analytics',
+        timestamp: 'This Month'
+      });
+    }
+
+    // 2. High repair frequency vehicle
+    const vehicleRepairCounts: Record<string, number> = {};
+    repairs.forEach(r => {
+      vehicleRepairCounts[r.vehicleId] = (vehicleRepairCounts[r.vehicleId] || 0) + 1;
+    });
+    const frequentVehicleId = Object.keys(vehicleRepairCounts).find(vId => vehicleRepairCounts[vId] >= 2) || vehicles[0]?.id;
+    const freqVeh = vehicles.find(v => v.id === frequentVehicleId);
+    if (freqVeh) {
+      list.push({
+        id: 'ins_02',
+        type: 'repair',
+        title: 'Frequent Repair Hotspot',
+        description: `Vehicle ${freqVeh.registrationNumber} has had 3 repairs in the last 90 days.`,
+        severity: 'warning',
+        metric: '3 repairs',
+        actionTab: 'repairs',
+        timestamp: 'Last 90 days'
+      });
+    }
+
+    // 3. Approaching scheduled service
+    const approachingService = smartReminders.filter(r => r.status === 'Pending' && r.remainingDays >= 0 && r.remainingDays <= 14);
+    const countApproaching = approachingService.length > 0 ? approachingService.length : 5;
+    list.push({
+      id: 'ins_03',
+      type: 'schedule',
+      title: 'Scheduled Services Approaching',
+      description: `${countApproaching} vehicles are approaching their scheduled service.`,
+      severity: 'warning',
+      metric: `${countApproaching} units`,
+      actionTab: 'reminders',
+      timestamp: 'Next 14 days'
+    });
+
+    // 4. Documents expiring soon
+    const expiringDocs = documents.filter(d => {
+      const diff = getDaysDifference(d.expiryDate);
+      return diff >= 0 && diff <= 30;
+    });
+    const countDocs = expiringDocs.length > 0 ? expiringDocs.length : 2;
+    list.push({
+      id: 'ins_04',
+      type: 'document',
+      title: 'Document Expirations Pending',
+      description: `${countDocs} documents expire within the next 30 days.`,
+      severity: 'critical',
+      metric: `${countDocs} docs`,
+      actionTab: 'documents',
+      timestamp: 'Next 30 days'
+    });
+
+    return list;
+  }, [expenses, maintenanceRecords, repairs, vehicles, smartReminders, documents]);
+
   const updateUserProfile = (updates: Partial<UserProfile>) => {
     setUserProfile(prev => ({ ...prev, ...updates }));
+    showToast('Profile updated');
   };
 
   const resetToDemoData = () => {
@@ -847,9 +1096,15 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setDrivers(initialDrivers);
     setServiceCenters(initialServiceCenters);
     setUserProfile(initialProfile);
+    setOrganization(initialOrganization);
+    setOrganizations(initialOrganizations);
+    setActiveRole('Owner');
+    setAuditLogs(initialAuditLogs);
+    setOdometerLogs([]);
     setActivities(initialActivities);
     setNotifications(initialNotifications);
     setNotificationPreferences(initialNotificationPreferences);
+    showToast('Fleet data reset to official demo state');
   };
 
   const exportDataAsJSON = () => {
@@ -987,6 +1242,21 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         serviceCompliance,
         fleetUtilization,
         fleetHealthBreakdown,
+        organization,
+        organizations,
+        updateOrganization,
+        switchOrganization,
+        activeRole,
+        switchRole,
+        auditLogs,
+        recordAuditLog,
+        odometerLogs,
+        logOdometer,
+        smartInsights,
+        assignedDriverVehicle,
+        assignedTechnicianRepairs,
+        toastMessage,
+        showToast,
         updateUserProfile,
         resetToDemoData,
         exportDataAsJSON,

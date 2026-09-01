@@ -11,18 +11,24 @@ import {
   ActivityItem,
   NotificationItem,
   SmartReminder,
-  NotificationPreferences
+  NotificationPreferences,
+  Organization,
+  AuditLogEntry
 } from '../types';
 
 export const initialProfile: UserProfile = {
   id: 'usr_001',
-  name: 'Vikram Malhotra',
-  email: 'vikram.m@apexlogistics.com',
+  name: 'Thiruppugazh',
+  email: 'thiruppugazh@abctransport.in',
   role: 'Fleet Manager',
+  operationalRole: 'Owner', // Requirement 41
   fleetSizeBracket: '6–20',
   currency: '₹',
   distanceUnit: 'km',
-  organizationName: 'Apex Fleet & Logistics Solutions',
+  dateFormat: 'DD/MM/YYYY',
+  language: 'English (India)',
+  organizationName: 'ABC Transport Pvt Ltd',
+  organizationId: 'org_01',
   phone: '+91 98401 23456',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   isOnboarded: true
@@ -159,12 +165,12 @@ export const initialVehicles: Vehicle[] = [
   {
     id: 'veh_01',
     registrationNumber: 'TN 01 AB 1234',
-    name: 'Innova Hycross Executive #01',
+    name: 'Toyota Innova 2023',
     type: 'SUV',
     manufacturer: 'Toyota',
-    model: 'Innova Hycross',
+    model: 'Innova',
     variant: 'ZX(O) Strong Hybrid 2.0L',
-    year: 2024,
+    year: 2023,
     purchaseDate: '2024-02-10',
     purchasePrice: 3250000,
     vin: 'MBJAA12B4P0088921',
@@ -223,22 +229,22 @@ export const initialVehicles: Vehicle[] = [
   },
   {
     id: 'veh_03',
-    registrationNumber: 'KA 03 DE 5544',
-    name: 'Bolero Maxi City Van #08',
-    type: 'Van',
-    manufacturer: 'Mahindra',
-    model: 'Bolero Maxi Truck Plus',
-    variant: 'm2DiCR 2.5L Turbo',
+    registrationNumber: 'TN 02 CD 5678',
+    name: 'Tata Nexon 2022',
+    type: 'SUV',
+    manufacturer: 'Tata Motors',
+    model: 'Nexon',
+    variant: 'XZ+ 1.5L Turbo Diesel',
     year: 2022,
     purchaseDate: '2022-09-14',
-    purchasePrice: 820000,
+    purchasePrice: 1250000,
     vin: 'MA1TC2MJ7M6E45190',
-    engineNumber: 'M2DICR-883102',
-    currentOdometer: 78400,
+    engineNumber: 'REVOTORQ-883102',
+    currentOdometer: 58400,
     fuelType: 'Diesel',
     transmission: 'Manual',
-    seatingCapacity: 2,
-    averageDailyKm: 95,
+    seatingCapacity: 5,
+    averageDailyKm: 65,
     department: 'Intra-City Delivery',
     location: 'Bangalore Hub',
     assignedDriverId: 'drv_03',
@@ -250,24 +256,24 @@ export const initialVehicles: Vehicle[] = [
   },
   {
     id: 'veh_04',
-    registrationNumber: 'DL 08 EF 3321',
-    name: 'Honda City Executive #02',
-    type: 'Sedan',
-    manufacturer: 'Honda',
-    model: 'City',
-    variant: '1.5L i-VTEC ZX MT',
-    year: 2023,
-    purchaseDate: '2023-01-22',
-    purchasePrice: 1580000,
+    registrationNumber: 'TN 03 EF 9012',
+    name: 'Mahindra XUV700 2024',
+    type: 'SUV',
+    manufacturer: 'Mahindra',
+    model: 'XUV700',
+    variant: 'AX7 Luxury Pack 2.2L mHawk',
+    year: 2024,
+    purchaseDate: '2024-01-22',
+    purchasePrice: 2480000,
     vin: 'MAKGM668NP0012903',
-    engineNumber: 'L15Z1-772109',
-    currentOdometer: 32150,
-    fuelType: 'Petrol',
-    transmission: 'Manual',
-    seatingCapacity: 5,
-    averageDailyKm: 45,
+    engineNumber: 'MHAWK22-772109',
+    currentOdometer: 22150,
+    fuelType: 'Diesel',
+    transmission: 'Automatic',
+    seatingCapacity: 7,
+    averageDailyKm: 55,
     department: 'Management Transport',
-    location: 'New Delhi HQ',
+    location: 'Chennai HQ',
     assignedDriverId: 'drv_04',
     status: 'Active',
     healthScore: 94,
@@ -1232,4 +1238,81 @@ export const initialNotificationPreferences: NotificationPreferences = {
   notifyOnExpiry: true,
   criticalAlertsImmediate: true
 };
+
+// Requirement 42: Organization Support ("ABC Transport Pvt Ltd")
+export const initialOrganization: Organization = {
+  id: 'org_01',
+  name: 'ABC Transport Pvt Ltd',
+  logoUrl: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=120&auto=format&fit=crop&q=80',
+  address: 'Plot 14, Guindy Industrial Estate, Mount Road',
+  city: 'Chennai',
+  contactPhone: '+91 44 2800 1100',
+  contactEmail: 'ops@abctransport.in',
+  taxId: 'GSTIN33AAACA1122D1Z5',
+  plan: 'Enterprise',
+  createdAt: '2023-01-15T00:00:00Z'
+};
+
+export const initialOrganizations: Organization[] = [
+  initialOrganization,
+  {
+    id: 'org_02',
+    name: 'Southern Express Logistics',
+    address: 'B-12, Ambattur Industrial Estate',
+    city: 'Chennai',
+    contactPhone: '+91 44 2650 9988',
+    contactEmail: 'support@southernexpress.in',
+    plan: 'Growth',
+    createdAt: '2024-03-01T00:00:00Z'
+  }
+];
+
+// Requirement 47: Audit Log Seed
+export const initialAuditLogs: AuditLogEntry[] = [
+  {
+    id: 'aud_01',
+    actorName: 'Thiruppugazh',
+    actorRole: 'Fleet Manager',
+    action: 'Maintenance record added',
+    entityType: 'Maintenance',
+    entityId: 'maint_01',
+    entityName: 'TN 01 AB 1234',
+    description: 'Thiruppugazh added a maintenance record (Engine Oil & Filter Service) for ₹4,850',
+    timestamp: '2 hours ago'
+  },
+  {
+    id: 'aud_02',
+    actorName: 'Workshop Master',
+    actorRole: 'Technician',
+    action: 'Repair status changed',
+    entityType: 'Repair',
+    entityId: 'rep_01',
+    entityName: 'REP-1024',
+    description: 'Repair #REP-1024 moved to Completed',
+    timestamp: 'Yesterday at 4:30 PM'
+  },
+  {
+    id: 'aud_03',
+    actorName: 'Thiruppugazh',
+    actorRole: 'Owner',
+    action: 'Driver assigned',
+    entityType: 'Driver',
+    entityId: 'drv_01',
+    entityName: 'TN 01 AB 1234',
+    description: 'Rajesh Kumar assigned as Primary Driver to TN 01 AB 1234',
+    timestamp: '3 days ago'
+  },
+  {
+    id: 'aud_04',
+    actorName: 'Thiruppugazh',
+    actorRole: 'Owner',
+    action: 'Vehicle created',
+    entityType: 'Vehicle',
+    entityId: 'veh_04',
+    entityName: 'TN 03 EF 9012',
+    description: 'New vehicle Mahindra XUV700 (TN 03 EF 9012) added to fleet',
+    timestamp: '5 days ago'
+  }
+];
+
 

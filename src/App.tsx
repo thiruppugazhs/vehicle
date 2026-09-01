@@ -20,6 +20,7 @@ import { AnalyticsView } from './components/analytics/AnalyticsView';
 import { ReportsView } from './components/reports/ReportsView';
 import { NotificationsView } from './components/notifications/NotificationsView';
 import { SettingsView } from './components/settings/SettingsView';
+import { AuditLogsView } from './components/audit/AuditLogsView';
 import { AddEditVehicleModal } from './components/vehicles/AddEditVehicleModal';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
@@ -82,6 +83,7 @@ const AppContent: React.FC = () => {
           {activeTab === 'analytics' && <AnalyticsView />}
           {activeTab === 'reports' && <ReportsView />}
           {activeTab === 'notifications' && <NotificationsView />}
+          {activeTab === 'audit' && <AuditLogsView />}
           {activeTab === 'settings' && <SettingsView />}
         </main>
       </div>

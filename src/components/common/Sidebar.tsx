@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   LayoutDashboard,
   Car,
@@ -16,7 +16,10 @@ import {
   Shield,
   X,
   Sparkles,
-  Layers
+  Layers,
+  History,
+  LogOut,
+  MoreHorizontal
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 
@@ -33,7 +36,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     smartReminders,
     repairs,
     documents,
-    userProfile
+    userProfile,
+    organization,
+    activeRole
   } = useFleet();
 
   // Dynamic badges for urgent attention
@@ -109,8 +114,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     {
       id: 'reports',
-      label: 'Reports & Logs',
+      label: 'Reports & Export',
       icon: FileCheck
+    },
+    {
+      id: 'audit',
+      label: 'Audit Trail',
+      icon: History
     },
     {
       id: 'settings',
@@ -136,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar Container (Desktop & Collapsible Drawer) */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-40 w-64 border-r border-slate-200 bg-white flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -146,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className="flex items-center gap-2.5 text-left focus:outline-hidden group"
+            className="flex items-center gap-2.5 text-left focus:outline-hidden group cursor-pointer"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs group-hover:bg-amber-600 transition-colors">
               <Layers className="w-5 h-5 stroke-[2.5]" />
@@ -166,27 +176,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Current Organization / Scope Card */}
-        <div className="p-3 mx-3 my-3 rounded-xl bg-slate-50 border border-slate-200/80">
+        {/* Current Organization / Scope Card (Requirement 42 & 52) */}
+        <div className="p-3 mx-3 my-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-left">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Workspace</span>
-            <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
-              {userProfile.fleetSizeBracket} Units
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Workspace</span>
+            <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
+              {organization.plan}
             </span>
           </div>
-          <p className="text-xs font-bold text-slate-800 truncate mt-0.5">
-            {userProfile.organizationName || 'Personal Garage'}
+          <p className="text-xs font-bold text-slate-900 truncate mt-0.5">
+            {organization.name}
           </p>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 overflow-y-auto px-3 py-1 space-y-1">
+        {/* Navigation Links (Requirement 52) */}
+        <nav className="flex-1 overflow-y-auto px-3 py-1 space-y-0.5">
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = activeTab === item.id || (item.id === 'vehicles' && activeTab === 'vehicle-details');
@@ -195,13 +205,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`flex w-full items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                className={`flex w-full items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-amber-50 text-amber-900 font-semibold shadow-xs border border-amber-200/70'
+                    ? 'bg-amber-50 text-amber-900 shadow-xs border border-amber-200/70 font-bold'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <Icon
                     className={`w-4 h-4 transition-colors ${
                       isActive ? 'text-amber-600 stroke-[2.2]' : 'text-slate-400'
@@ -212,7 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
                 {item.badge !== undefined && (
                   <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
                       item.badgeType === 'critical'
                         ? 'bg-rose-100 text-rose-700'
                         : item.badgeType === 'warning'
@@ -228,19 +238,59 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           })}
         </nav>
 
-        {/* Bottom Promotion / Switch to Landing */}
-        <div className="p-3 border-t border-slate-100 mt-auto">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 text-left">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 mb-1">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              Smart Maintenance AI
+        {/* Bottom Profile, Organization & Signout (Requirement 52) */}
+        <div className="p-3 border-t border-slate-100 mt-auto bg-slate-50/50 text-left">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img
+                src={userProfile.avatarUrl}
+                alt={userProfile.name}
+                className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-900 truncate">{userProfile.name}</p>
+                <span className="inline-block text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 rounded">
+                  {activeRole}
+                </span>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              Automatic predictive intervals for engine oil, brakes & tyre rotations active.
-            </p>
+
+            <button
+              onClick={() => setActiveTab('landing')}
+              title="Sign Out"
+              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>
+
+      {/* Requirement 51: Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 border-t border-slate-200 backdrop-blur-xs flex items-center justify-around px-2 py-1.5 shadow-lg">
+        {[
+          { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { id: 'vehicles', label: 'Vehicles', icon: Car },
+          { id: 'maintenance', label: 'Service', icon: Wrench },
+          { id: 'repairs', label: 'Repairs', icon: AlertTriangle },
+          { id: 'settings', label: 'More', icon: MoreHorizontal }
+        ].map(item => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-colors cursor-pointer ${
+                isActive ? 'text-amber-600' : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 };
