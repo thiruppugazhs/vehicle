@@ -5,6 +5,7 @@ import {
   ServiceSchedule,
   SmartReminder,
   RepairTicket,
+  RepairStatus,
   ExpenseRecord,
   VehicleDocument,
   Driver,
@@ -12,6 +13,7 @@ import {
   UserProfile,
   ActivityItem,
   NotificationItem,
+  NotificationPreferences,
   PriorityLevel
 } from '../types';
 import {
@@ -26,7 +28,8 @@ import {
   initialServiceCenters,
   initialProfile,
   initialActivities,
-  initialNotifications
+  initialNotifications,
+  initialNotificationPreferences
 } from '../data/initialData';
 import { computeVehicleHealthScore } from '../utils/healthCalculator';
 import { getDaysDifference } from '../utils/formatters';
@@ -109,7 +112,24 @@ interface FleetContextType {
 
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
+  deleteNotification: (id: string) => void;
   
+  // Part 2 additions
+  notificationPreferences: NotificationPreferences;
+  updateNotificationPreferences: (prefs: Partial<NotificationPreferences>) => void;
+  isNotificationPreferencesOpen: boolean;
+  setIsNotificationPreferencesOpen: (open: boolean) => void;
+  moveRepairStage: (repairId: string, newStage: RepairStatus) => void;
+  assignDriver: (vehicleId: string, driverId: string, role: 'Primary' | 'Backup', notes?: string) => void;
+  isGlobalSearchOpen: boolean;
+  setIsGlobalSearchOpen: (open: boolean) => void;
+  fleetHealthFilter: 'ALL' | 'Excellent' | 'Needs Attention' | 'Critical';
+  setFleetHealthFilter: (filter: 'ALL' | 'Excellent' | 'Needs Attention' | 'Critical') => void;
+  totalFleetDowntimeHours: number;
+  serviceCompliance: { complianceRate: number; onTimeCount: number; lateCount: number; overdueCount: number };
+  fleetUtilization: number;
+  fleetHealthBreakdown: { excellent: number; needsAttention: number; critical: number };
+
   updateUserProfile: (updates: Partial<UserProfile>) => void;
   resetToDemoData: () => void;
   exportDataAsJSON: () => void;
@@ -131,6 +151,7 @@ const STORAGE_KEYS = {
   PROFILE: 'fleetpulse_profile',
   ACTIVITIES: 'fleetpulse_activities',
   NOTIFICATIONS: 'fleetpulse_notifications',
+  PREFERENCES: 'fleetpulse_notification_prefs',
 };
 
 export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -145,6 +166,9 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isReportIssueOpen, setIsReportIssueOpenState] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpenState] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isNotificationPreferencesOpen, setIsNotificationPreferencesOpen] = useState(false);
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
+  const [fleetHealthFilter, setFleetHealthFilter] = useState<'ALL' | 'Excellent' | 'Needs Attention' | 'Critical'>('ALL');
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [isOnboardingActive, setIsOnboardingActive] = useState(false);
   const [presetVehicleId, setPresetVehicleId] = useState<string | undefined>(undefined);
@@ -233,7 +257,20 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : initialNotifications;
   });
 
+  const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+    return saved ? JSON.parse(saved) : initialNotificationPreferences;
+  });
+
   // Sync to LocalStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(notificationPreferences));
+  }, [notificationPreferences]);
+
+  const updateNotificationPreferences = (updates: Partial<NotificationPreferences>) => {
+    setNotificationPreferences(prev => ({ ...prev, ...updates }));
+  };
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(vehicles));
   }, [vehicles]);
@@ -473,7 +510,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Update vehicle status to Under Repair
     const targetVeh = vehicles.find(v => v.id === data.vehicleId);
-    if (targetVeh && data.status !== 'Resolved') {
+    if (targetVeh && data.status !== 'Completed' && data.status !== 'Closed') {
       updateVehicle(targetVeh.id, { status: 'Under Repair' });
     }
 
@@ -497,17 +534,85 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateRepairTicket = (id: string, updates: Partial<RepairTicket>) => {
-    setRepairs(prev => prev.map(r => (r.id === id ? { ...r, ...updates } : r)));
+    setRepairs(prev => prev.map(r => {
+      if (r.id === id) {
+        const merged = { ...r, ...updates };
+        if (merged.approvedCost !== undefined && merged.actualCost !== undefined) {
+          merged.costVariance = merged.actualCost - merged.approvedCost;
+          merged.isUnusualVariance = merged.costVariance > 1000 || (merged.approvedCost > 0 && merged.costVariance / merged.approvedCost > 0.1);
+        }
+        return merged;
+      }
+      return r;
+    }));
     
-    // If marked resolved, check if vehicle has any other active repairs
-    if (updates.status === 'Resolved') {
+    // If marked completed or closed, check if vehicle has any other active repairs
+    const isFinished = updates.status === 'Completed' || updates.status === 'Closed';
+    if (isFinished) {
       const repair = repairs.find(r => r.id === id);
       if (repair) {
-        const otherRepairs = repairs.filter(r => r.vehicleId === repair.vehicleId && r.id !== id && r.status !== 'Resolved');
+        const otherRepairs = repairs.filter(r => 
+          r.vehicleId === repair.vehicleId && 
+          r.id !== id && 
+          r.status !== 'Completed' && 
+          r.status !== 'Closed'
+        );
         if (otherRepairs.length === 0) {
           updateVehicle(repair.vehicleId, { status: 'Active' });
         }
       }
+    }
+  };
+
+  const moveRepairStage = (repairId: string, newStage: RepairStatus) => {
+    const targetRepair = repairs.find(r => r.id === repairId);
+    if (!targetRepair) return;
+
+    const updates: Partial<RepairTicket> = { status: newStage };
+
+    if (newStage === 'Repair In Progress' && !targetRepair.startDate) {
+      updates.startDate = new Date().toISOString().slice(0, 10);
+    }
+
+    if (newStage === 'Completed' || newStage === 'Closed') {
+      if (!targetRepair.actualCompletion) {
+        updates.actualCompletion = new Date().toISOString().slice(0, 10);
+      }
+      if (targetRepair.downtimeStart && !targetRepair.downtimeEnd) {
+        updates.downtimeEnd = new Date().toISOString();
+      }
+    }
+
+    updateRepairTicket(repairId, updates);
+
+    // If repair completed/closed, check vehicle status and add notification
+    if (newStage === 'Completed' || newStage === 'Closed') {
+      const otherActive = repairs.filter(r => 
+        r.vehicleId === targetRepair.vehicleId && 
+        r.id !== repairId && 
+        r.status !== 'Completed' && 
+        r.status !== 'Closed'
+      );
+      if (otherActive.length === 0) {
+        updateVehicle(targetRepair.vehicleId, { status: 'Active' });
+      }
+
+      const veh = vehicles.find(v => v.id === targetRepair.vehicleId);
+      if (veh) {
+        const notif: NotificationItem = {
+          id: `notif_${Date.now()}`,
+          title: 'Repair Completed',
+          message: `${targetRepair.issueTitle} completed for ${veh.registrationNumber}`,
+          type: 'success',
+          notificationType: 'repair_completed',
+          timestamp: 'Just now',
+          isRead: false,
+          linkTo: { tab: 'repairs', vehicleId: veh.id }
+        };
+        setNotifications(prev => [notif, ...prev]);
+      }
+    } else {
+      updateVehicle(targetRepair.vehicleId, { status: 'Under Repair' });
     }
   };
 
@@ -609,6 +714,81 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const assignDriver = (vehicleId: string, driverId: string, role: 'Primary' | 'Backup', notes?: string) => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    const drv = drivers.find(d => d.id === driverId);
+    if (!veh || !drv) return;
+
+    const historyItem = {
+      id: `dh_${Date.now()}`,
+      driverId,
+      driverName: drv.name,
+      role,
+      assignedDate: new Date().toISOString().slice(0, 10),
+      notes: notes || `Assigned as ${role} driver`
+    };
+
+    const updates: Partial<Vehicle> = {
+      driverHistory: [historyItem, ...(veh.driverHistory || [])]
+    };
+
+    if (role === 'Primary') {
+      updates.primaryDriverId = driverId;
+      updates.assignedDriverId = driverId;
+    } else {
+      updates.backupDriverId = driverId;
+    }
+
+    updateVehicle(vehicleId, updates);
+    updateDriver(driverId, { assignedVehicleId: vehicleId });
+
+    setActivities(prev => [{
+      id: `act_${Date.now()}`,
+      type: 'vehicle',
+      title: 'Driver Assigned',
+      description: `${drv.name} assigned as ${role} driver to ${veh.registrationNumber}`,
+      vehicleReg: veh.registrationNumber,
+      vehicleName: veh.name,
+      timestamp: 'Just now'
+    }, ...prev]);
+  };
+
+  // Fleet Analytics & Metrics
+  const totalFleetDowntimeHours = useMemo(() => {
+    return repairs.reduce((acc, r) => acc + (r.downtimeHours || (r.downtimeDays ? r.downtimeDays * 24 : 0)), 0);
+  }, [repairs]);
+
+  const serviceCompliance = useMemo(() => {
+    const completed = maintenanceRecords.length;
+    const overdue = smartReminders.filter(r => r.status === 'Pending' && r.remainingDays < 0).length;
+    const upcoming = smartReminders.filter(r => r.status === 'Pending' && r.remainingDays >= 0).length;
+    const total = completed + overdue;
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 94;
+    return {
+      complianceRate: rate,
+      onTimeCount: completed,
+      lateCount: upcoming,
+      overdueCount: overdue
+    };
+  }, [maintenanceRecords, smartReminders]);
+
+  const fleetUtilization = useMemo(() => {
+    if (enrichedVehicles.length === 0) return 0;
+    const active = enrichedVehicles.filter(v => v.status === 'Active' || v.status === 'Due for Service').length;
+    return Math.round((active / enrichedVehicles.length) * 100);
+  }, [enrichedVehicles]);
+
+  const fleetHealthBreakdown = useMemo(() => {
+    const excellent = enrichedVehicles.filter(v => v.healthScore >= 80).length;
+    const needsAttention = enrichedVehicles.filter(v => v.healthScore >= 60 && v.healthScore < 80).length;
+    const critical = enrichedVehicles.filter(v => v.healthScore < 60).length;
+    return { excellent, needsAttention, critical };
+  }, [enrichedVehicles]);
+
   const updateUserProfile = (updates: Partial<UserProfile>) => {
     setUserProfile(prev => ({ ...prev, ...updates }));
   };
@@ -627,6 +807,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setUserProfile(initialProfile);
     setActivities(initialActivities);
     setNotifications(initialNotifications);
+    setNotificationPreferences(initialNotificationPreferences);
   };
 
   const exportDataAsJSON = () => {
@@ -744,6 +925,21 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         dismissReminder,
         markNotificationRead,
         markAllNotificationsRead,
+        deleteNotification,
+        isNotificationPreferencesOpen,
+        setIsNotificationPreferencesOpen,
+        notificationPreferences,
+        updateNotificationPreferences,
+        moveRepairStage,
+        assignDriver,
+        isGlobalSearchOpen,
+        setIsGlobalSearchOpen,
+        fleetHealthFilter,
+        setFleetHealthFilter,
+        totalFleetDowntimeHours,
+        serviceCompliance,
+        fleetUtilization,
+        fleetHealthBreakdown,
         updateUserProfile,
         resetToDemoData,
         exportDataAsJSON,

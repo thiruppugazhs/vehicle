@@ -15,10 +15,14 @@ import { RemindersView } from './components/reminders/RemindersView';
 import { DocumentsView } from './components/documents/DocumentsView';
 import { DriversView } from './components/drivers/DriversView';
 import { ServiceCentersView } from './components/service-centers/ServiceCentersView';
+import { FleetManagementView } from './components/fleet-management/FleetManagementView';
 import { AnalyticsView } from './components/analytics/AnalyticsView';
+import { ReportsView } from './components/reports/ReportsView';
 import { NotificationsView } from './components/notifications/NotificationsView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AddEditVehicleModal } from './components/vehicles/AddEditVehicleModal';
+import { GlobalSearchModal } from './components/common/GlobalSearchModal';
+import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
 
 const AppContent: React.FC = () => {
   const {
@@ -74,7 +78,9 @@ const AppContent: React.FC = () => {
           {activeTab === 'documents' && <DocumentsView />}
           {activeTab === 'drivers' && <DriversView />}
           {activeTab === 'service-centers' && <ServiceCentersView />}
-          {(activeTab === 'fleet-management' || activeTab === 'reports') && <AnalyticsView />}
+          {activeTab === 'fleet-management' && <FleetManagementView />}
+          {activeTab === 'analytics' && <AnalyticsView />}
+          {activeTab === 'reports' && <ReportsView />}
           {activeTab === 'notifications' && <NotificationsView />}
           {activeTab === 'settings' && <SettingsView />}
         </main>
@@ -86,6 +92,8 @@ const AppContent: React.FC = () => {
         isOpen={isAddVehicleOpen}
         onClose={() => setIsAddVehicleOpen(false)}
       />
+      <GlobalSearchModal />
+      <NotificationPreferencesModal />
     </div>
   );
 };

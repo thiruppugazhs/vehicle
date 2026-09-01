@@ -168,13 +168,16 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
       });
 
       // Register initial documents if checked
+      const today = new Date().toISOString().slice(0, 10);
       if (hasRC) {
         addDocument({
           vehicleId: newVeh.id,
-          documentType: 'Registration Certificate (RC)',
+          documentName: `${newVeh.name} - Registration Certificate (RC)`,
+          documentType: 'Registration Certificate',
           documentNumber: `RC-${newVeh.registrationNumber.replace(/\s+/g, '')}`,
-          issueDate: new Date().toISOString().slice(0, 10),
+          issueDate: today,
           expiryDate: new Date(Date.now() + 15 * 365 * 86400000).toISOString().slice(0, 10),
+          uploadedDate: today,
           status: 'Valid',
           fileName: `RC_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
           issuingAuthority: 'Regional Transport Office'
@@ -183,10 +186,12 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
       if (hasInsurance) {
         addDocument({
           vehicleId: newVeh.id,
-          documentType: 'Insurance Policy',
+          documentName: `${newVeh.name} - Comprehensive Insurance Policy`,
+          documentType: 'Insurance',
           documentNumber: `INS-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
-          issueDate: new Date().toISOString().slice(0, 10),
+          issueDate: today,
           expiryDate: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
+          uploadedDate: today,
           status: 'Valid',
           fileName: `INSURANCE_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
           issuingAuthority: 'Comprehensive Fleet Cover Corp'
@@ -195,10 +200,12 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
       if (hasPUC) {
         addDocument({
           vehicleId: newVeh.id,
-          documentType: 'PUC / Emission Certificate',
+          documentName: `${newVeh.name} - Pollution Under Control (PUC)`,
+          documentType: 'PUC',
           documentNumber: `PUC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-          issueDate: new Date().toISOString().slice(0, 10),
+          issueDate: today,
           expiryDate: new Date(Date.now() + 180 * 86400000).toISOString().slice(0, 10),
+          uploadedDate: today,
           status: 'Valid',
           fileName: `PUC_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
           issuingAuthority: 'Transport Emission Bureau'
@@ -207,10 +214,12 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
       if (hasFitness) {
         addDocument({
           vehicleId: newVeh.id,
+          documentName: `${newVeh.name} - Commercial Fitness Certificate`,
           documentType: 'Fitness Certificate',
           documentNumber: `FC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-          issueDate: new Date().toISOString().slice(0, 10),
+          issueDate: today,
           expiryDate: new Date(Date.now() + 730 * 86400000).toISOString().slice(0, 10),
+          uploadedDate: today,
           status: 'Valid',
           fileName: `FITNESS_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
           issuingAuthority: 'RTO Commercial Fitness'
@@ -219,10 +228,12 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
       if (hasPermit) {
         addDocument({
           vehicleId: newVeh.id,
-          documentType: 'Commercial Permit',
+          documentName: `${newVeh.name} - All-India Goods Permit`,
+          documentType: 'Permit',
           documentNumber: `NP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-          issueDate: new Date().toISOString().slice(0, 10),
+          issueDate: today,
           expiryDate: new Date(Date.now() + 1825 * 86400000).toISOString().slice(0, 10),
+          uploadedDate: today,
           status: 'Valid',
           fileName: `PERMIT_${newVeh.registrationNumber.replace(/\s+/g, '')}.pdf`,
           issuingAuthority: 'Ministry of Road Transport'

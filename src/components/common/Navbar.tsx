@@ -27,6 +27,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const {
     globalSearchQuery,
     setGlobalSearchQuery,
+    isGlobalSearchOpen,
+    setIsGlobalSearchOpen,
+    isNotificationPreferencesOpen,
+    setIsNotificationPreferencesOpen,
     notifications,
     markNotificationRead,
     markAllNotificationsRead,
@@ -51,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  // Close dropdowns on outside click
+  // Close dropdowns on outside click and handle Ctrl+K shortcut
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -64,9 +68,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         setIsProfileOpen(false);
       }
     };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        setIsGlobalSearchOpen(true);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [setIsGlobalSearchOpen]);
 
   const handleSwitchPersona = () => {
     if (userProfile.role === 'Fleet Manager') {
@@ -98,23 +114,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="relative w-full max-w-md">
+        <div
+          onClick={() => setIsGlobalSearchOpen(true)}
+          className="relative w-full max-w-md cursor-pointer"
+        >
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
+            readOnly
             value={globalSearchQuery}
-            onChange={e => setGlobalSearchQuery(e.target.value)}
-            placeholder="Search vehicles, registration, VIN, driver..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-slate-400"
+            placeholder="Global search (Vehicles, Repairs, Expenses...)"
+            className="w-full pl-10 pr-16 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100/70 cursor-pointer placeholder:text-slate-400 font-medium"
           />
-          {globalSearchQuery && (
-            <button
-              onClick={() => setGlobalSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-medium"
-            >
-              Clear
-            </button>
-          )}
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded shadow-2xs">
+            ⌘K
+          </span>
         </div>
       </div>
 
@@ -267,15 +281,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 )}
               </div>
 
-              <div className="p-2 border-t border-slate-100 text-center">
+              <div className="p-2 border-t border-slate-100 flex items-center justify-between text-xs px-3">
+                <button
+                  onClick={() => {
+                    setIsNotifOpen(false);
+                    setIsNotificationPreferencesOpen(true);
+                  }}
+                  className="font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                >
+                  Preferences
+                </button>
                 <button
                   onClick={() => {
                     setIsNotifOpen(false);
                     setActiveTab('notifications');
                   }}
-                  className="text-xs font-semibold text-amber-700 hover:text-amber-800"
+                  className="font-bold text-amber-700 hover:text-amber-800 cursor-pointer"
                 >
-                  View All Notifications
+                  View All &rarr;
                 </button>
               </div>
             </div>

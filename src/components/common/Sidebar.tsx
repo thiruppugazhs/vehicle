@@ -10,6 +10,7 @@ import {
   Users,
   Building2,
   BarChart3,
+  TrendingUp,
   FileCheck,
   Settings,
   Shield,
@@ -37,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   // Dynamic badges for urgent attention
   const overdueCount = vehicles.filter(v => v.status === 'Overdue').length;
-  const pendingRepairsCount = repairs.filter(r => r.status !== 'Resolved').length;
+  const pendingRepairsCount = repairs.filter(r => r.status !== 'Completed' && r.status !== 'Closed').length;
   const criticalRemindersCount = smartReminders.filter(r => r.priority === 'Critical' && r.status === 'Pending').length;
   const expiringDocsCount = documents.filter(d => d.status === 'Expiring Soon' || d.status === 'Expired').length;
 
@@ -98,8 +99,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     {
       id: 'fleet-management',
-      label: 'Fleet Analytics',
+      label: 'Fleet Operations',
       icon: BarChart3
+    },
+    {
+      id: 'analytics',
+      label: 'Cost Analytics',
+      icon: TrendingUp
     },
     {
       id: 'reports',
