@@ -68,6 +68,7 @@ export interface DriverAssignmentHistory {
 
 export interface Vehicle {
   id: string;
+  organizationId?: string;
   registrationNumber: string; // e.g. "TN 01 AB 1234"
   name: string; // e.g. "Tata Prima Hauler #04"
   type: VehicleType;
@@ -107,6 +108,7 @@ export interface Vehicle {
 
 export interface MaintenanceRecord {
   id: string;
+  organizationId?: string;
   vehicleId: string;
   serviceType: MaintenanceCategory;
   category?: MaintenanceCategory;
@@ -180,6 +182,7 @@ export type RepairSeverity = 'Minor' | 'Moderate' | 'Major' | 'Critical';
 // Requirement 23 & 24 & 25 & 35: Full repair record with cost tracking & downtime
 export interface RepairTicket {
   id: string; // Repair ID e.g. "REP-2026-081"
+  organizationId?: string;
   vehicleId: string;
   issueTitle: string;
   issueCategory?: string; // Engine, Brakes, Transmission, Electrical, Suspension, AC/HVAC, Tyres, Body, Other
@@ -243,6 +246,7 @@ export type PaymentMethod =
 
 export interface ExpenseRecord {
   id: string;
+  organizationId?: string;
   vehicleId: string;
   category: ExpenseCategory;
   amount: number;
@@ -274,6 +278,7 @@ export type DocumentType =
 
 export interface VehicleDocument {
   id: string;
+  organizationId?: string;
   vehicleId: string;
   documentName: string; // Requirement 28
   documentType: DocumentType;
@@ -291,6 +296,7 @@ export interface VehicleDocument {
 // Requirement 30: Driver fields
 export interface Driver {
   id: string;
+  organizationId?: string;
   name: string;
   phone: string;
   email: string;
@@ -307,6 +313,7 @@ export interface Driver {
 // Requirement 32: Service Center fields
 export interface ServiceCenter {
   id: string;
+  organizationId?: string;
   name: string;
   contactPerson: string;
   address: string;

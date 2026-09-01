@@ -3,6 +3,7 @@ import { useFleet } from '../../context/FleetContext';
 import { DocumentType } from '../../types';
 import { formatDate, getDaysDifference } from '../../utils/formatters';
 import { Modal } from '../common/Modal';
+import { EmptyState } from '../common/EmptyState';
 import { 
   FileText, 
   Plus, 
@@ -235,6 +236,21 @@ export const DocumentsView: React.FC = () => {
       </div>
 
       {/* Documents Grid */}
+      {filteredDocs.length === 0 ? (
+        <EmptyState
+          icon={FileCheck2}
+          title="No Documents Found"
+          description="There are no compliance documents matching your filter criteria."
+          actionLabel="Upload Document"
+          onAction={() => setIsAddDocOpen(true)}
+          secondaryActionLabel={searchQuery || typeFilter !== 'ALL' || statusFilter !== 'ALL' ? 'Reset Filters' : undefined}
+          onSecondaryAction={() => {
+            setSearchQuery('');
+            setTypeFilter('ALL');
+            setStatusFilter('ALL');
+          }}
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredDocs.map(doc => {
           const veh = vehicles.find(v => v.id === doc.vehicleId);
@@ -362,6 +378,7 @@ export const DocumentsView: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Add Document Modal */}
       <Modal

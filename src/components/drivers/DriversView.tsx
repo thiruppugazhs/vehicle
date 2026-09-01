@@ -19,6 +19,7 @@ import {
 import { useFleet } from '../../context/FleetContext';
 import { formatDate } from '../../utils/formatters';
 import { Modal } from '../common/Modal';
+import { EmptyState } from '../common/EmptyState';
 import { Driver } from '../../types';
 
 export const DriversView: React.FC = () => {
@@ -166,6 +167,20 @@ export const DriversView: React.FC = () => {
       </div>
 
       {/* Driver Cards Grid */}
+      {filteredDrivers.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No Drivers Found"
+          description="There are no active or registered drivers matching your filter criteria."
+          actionLabel="Add New Driver"
+          onAction={() => setIsAddDriverOpen(true)}
+          secondaryActionLabel={searchQuery || statusFilter !== 'ALL' ? 'Reset Filters' : undefined}
+          onSecondaryAction={() => {
+            setSearchQuery('');
+            setStatusFilter('ALL');
+          }}
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredDrivers.map(driver => {
           const assignedVeh = vehicles.find(v => v.id === driver.assignedVehicleId || v.primaryDriverId === driver.id);
@@ -326,6 +341,7 @@ export const DriversView: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Requirement 30: Add Driver Modal with all fields */}
       <Modal

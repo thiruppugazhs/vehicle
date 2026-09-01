@@ -403,29 +403,37 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
   }, [notifications]);
 
-  // Recalculate dynamic vehicle health and reminders
+  // Recalculate dynamic vehicle health and reminders (Requirement 42: Organization Scoping)
   const enrichedVehicles = useMemo(() => {
-    return vehicles.map(v => {
-      const evaluation = computeVehicleHealthScore(v, repairs, smartReminders, documents);
-      return {
-        ...v,
-        healthScore: evaluation.score
-      };
-    });
-  }, [vehicles, repairs, smartReminders, documents]);
+    return vehicles
+      .filter(v => v.organizationId === organization.id || (!v.organizationId && organization.id === 'org_01'))
+      .map(v => {
+        const evaluation = computeVehicleHealthScore(v, repairs, smartReminders, documents);
+        return {
+          ...v,
+          healthScore: evaluation.score
+        };
+      });
+  }, [vehicles, repairs, smartReminders, documents, organization.id]);
 
   // Helper getters
   const getVehicleById = (id: string) => enrichedVehicles.find(v => v.id === id);
   const getDriverById = (id: string) => drivers.find(d => d.id === id);
   const getServiceCenterById = (id: string) => serviceCenters.find(sc => sc.id === id);
 
-  // Actions
+  // Actions (Requirement 41 & 44: RBAC & Permission Enforcement)
   const addVehicle = (newVehData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'healthScore'>): Vehicle => {
+    if (activeRole === 'Driver' || activeRole === 'Technician') {
+      showToast(`Permission Denied: ${activeRole}s cannot register new vehicles.`);
+      return {} as Vehicle;
+    }
+
     const id = `veh_${Date.now().toString(36)}`;
     const now = new Date().toISOString();
     const newVehicle: Vehicle = {
       ...newVehData,
       id,
+      organizationId: organization.id,
       healthScore: 100,
       createdAt: now,
       updatedAt: now,
@@ -455,6 +463,11 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteVehicle = (id: string) => {
+    if (activeRole === 'Driver' || activeRole === 'Technician') {
+      showToast(`Permission Denied: ${activeRole}s are not authorized to delete vehicles.`);
+      return;
+    }
+
     const veh = vehicles.find(v => v.id === id);
     setVehicles(prev => prev.filter(v => v.id !== id));
     if (selectedVehicleId === id) setSelectedVehicleId(null);
@@ -553,6 +566,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteMaintenanceRecord = (id: string) => {
+    if (activeRole === 'Driver' || activeRole === 'Technician') {
+      showToast(`Permission Denied: ${activeRole}s cannot delete maintenance history records.`);
+      return;
+    }
     setMaintenanceRecords(prev => prev.filter(r => r.id !== id));
   };
 
@@ -649,6 +666,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteRepairTicket = (id: string) => {
+    if (activeRole === 'Driver') {
+      showToast('Permission Denied: Drivers cannot delete repair tickets.');
+      return;
+    }
     setRepairs(prev => prev.filter(r => r.id !== id));
   };
 
@@ -740,6 +761,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteExpenseRecord = (id: string) => {
+    if (activeRole === 'Driver' || activeRole === 'Technician') {
+      showToast(`Permission Denied: ${activeRole}s cannot delete financial expense records.`);
+      return;
+    }
     setExpenses(prev => prev.filter(e => e.id !== id));
   };
 
@@ -747,7 +772,8 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const id = `doc_${Date.now().toString(36)}`;
     const newDoc: VehicleDocument = {
       ...data,
-      id
+      id,
+      organizationId: organization.id
     };
     setDocuments(prev => [newDoc, ...prev]);
 
@@ -773,12 +799,20 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteDocument = (id: string) => {
+    if (activeRole === 'Driver') {
+      showToast('Permission Denied: Drivers cannot delete compliance documents.');
+      return;
+    }
     setDocuments(prev => prev.filter(d => d.id !== id));
   };
 
   const addDriver = (data: Omit<Driver, 'id'>): Driver => {
+    if (activeRole !== 'Owner' && activeRole !== 'Fleet Manager') {
+      showToast('Permission Denied: Only Owners and Fleet Managers can register new drivers.');
+      return {} as Driver;
+    }
     const id = `drv_${Date.now().toString(36)}`;
-    const newDriver: Driver = { ...data, id };
+    const newDriver: Driver = { ...data, id, organizationId: organization.id };
     setDrivers(prev => [...prev, newDriver]);
     return newDriver;
   };
@@ -788,12 +822,20 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteDriver = (id: string) => {
+    if (activeRole !== 'Owner' && activeRole !== 'Fleet Manager') {
+      showToast('Permission Denied: Only Owners and Fleet Managers can remove drivers.');
+      return;
+    }
     setDrivers(prev => prev.filter(d => d.id !== id));
   };
 
   const addServiceCenter = (data: Omit<ServiceCenter, 'id'>): ServiceCenter => {
+    if (activeRole === 'Driver') {
+      showToast('Permission Denied: Drivers cannot register service centers.');
+      return {} as ServiceCenter;
+    }
     const id = `sc_${Date.now().toString(36)}`;
-    const newCenter: ServiceCenter = { ...data, id };
+    const newCenter: ServiceCenter = { ...data, id, organizationId: organization.id };
     setServiceCenters(prev => [...prev, newCenter]);
     return newCenter;
   };
@@ -803,6 +845,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteServiceCenter = (id: string) => {
+    if (activeRole !== 'Owner' && activeRole !== 'Fleet Manager') {
+      showToast('Permission Denied: Only Owners and Fleet Managers can remove service centers.');
+      return;
+    }
     setServiceCenters(prev => prev.filter(sc => sc.id !== id));
   };
 
@@ -936,6 +982,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Requirement 42: Organization Support
   const updateOrganization = (updates: Partial<Organization>) => {
+    if (activeRole !== 'Owner') {
+      showToast('Permission Denied: Only the Organization Owner can modify corporate workspace settings.');
+      return;
+    }
     setOrganization(prev => {
       const updated = { ...prev, ...updates };
       setOrganizations(orgs => orgs.map(o => o.id === updated.id ? updated : o));
