@@ -246,7 +246,10 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace(/^#\/?/, '');
-      if (!hash) return;
+      if (!hash || hash === '/') {
+        setActiveTabState('dashboard');
+        return;
+      }
       const parts = hash.split('/');
       const primary = parts[0];
       const sub = parts[1];
@@ -259,9 +262,13 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setAuthMode('signup');
       } else if (primary === 'onboarding') {
         setIsOnboardingActive(true);
+      } else if (primary === 'profile') {
+        setActiveTabState('settings');
       } else if (primary === 'vehicles' && sub) {
         setSelectedVehicleId(sub);
         setActiveTabState('vehicle-details');
+      } else if (primary === 'repairs' && sub) {
+        setActiveTabState('repairs');
       } else if (['dashboard', 'vehicles', 'maintenance', 'repairs', 'expenses', 'reminders', 'documents', 'drivers', 'service-centers', 'fleet-management', 'analytics', 'reports', 'notifications', 'audit', 'settings', 'admin', 'landing'].includes(primary)) {
         setActiveTabState(primary);
       }
