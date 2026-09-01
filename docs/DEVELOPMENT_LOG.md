@@ -88,3 +88,4 @@ Chronological record of engineering optimizations and code quality audits.
 - **Sprint 15**: refactor(vehicles): streamline domain helper contracts and clean up redundant types (#145) (2026-08-31)
 - **Sprint 15**: perf(maintenance): optimize rendering memoization and state selector efficiency (#146) (2026-08-31)
 - **Sprint 15**: style(repairs): polish light-theme padding, subtle border contrast, and typography (#147) (2026-08-31)
+- **Sprint 15**: test(expenses): expand automated unit coverage for edge case scenarios (#148) (2026-09-01)
