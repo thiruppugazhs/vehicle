@@ -21,13 +21,16 @@ import {
   Info,
   DollarSign,
   AlertOctagon,
-  FileCheck
+  FileCheck,
+  Trash2
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { HealthScoreBadge } from '../common/HealthScoreBadge';
 import { formatCurrency, formatDistance, formatDate } from '../../utils/formatters';
 import { AddEditVehicleModal } from '../vehicles/AddEditVehicleModal';
+import { AddServiceModal } from '../maintenance/AddServiceModal';
+import { MaintenanceRecord } from '../../types';
 
 export const VehicleDetailsView: React.FC = () => {
   const {
@@ -35,6 +38,7 @@ export const VehicleDetailsView: React.FC = () => {
     getVehicleById,
     getDriverById,
     maintenanceRecords,
+    deleteMaintenanceRecord,
     repairs,
     expenses,
     documents,
@@ -52,6 +56,8 @@ export const VehicleDetailsView: React.FC = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
+  const [recordToEdit, setRecordToEdit] = useState<MaintenanceRecord | null>(null);
+  const [isEditServiceOpen, setIsEditServiceOpen] = useState(false);
 
   const vehicle = getVehicleById(selectedVehicleId || '');
 
@@ -238,37 +244,57 @@ export const VehicleDetailsView: React.FC = () => {
       {activeSubTab === 'overview' && (
         <div className="space-y-6">
           {/* Section 15 Overview KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Current Odometer</span>
-              <p className="text-xl font-extrabold text-slate-900 mt-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Current Odometer</span>
+              <p className="text-lg font-extrabold text-slate-900 mt-1">
                 {formatDistance(vehicle.currentOdometer, userProfile.distanceUnit)}
               </p>
-              <span className="text-[11px] text-slate-500">~{vehicle.averageDailyKm || 80} km/day usage</span>
+              <span className="text-[10px] text-slate-500">~{vehicle.averageDailyKm || 80} km/day</span>
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Total Maintenance</span>
-              <p className="text-xl font-extrabold text-slate-900 mt-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Last Service</span>
+              <p className="text-lg font-extrabold text-slate-900 mt-1 truncate">
+                {vehicleServices[0] ? formatDate(vehicleServices[0].serviceDate) : 'None'}
+              </p>
+              <span className="text-[10px] text-slate-500 truncate block">
+                {vehicleServices[0] ? vehicleServices[0].serviceType : 'No service yet'}
+              </span>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Next Service Due</span>
+              <p className="text-lg font-extrabold text-amber-800 mt-1 truncate">
+                {vehicleReminders[0] ? formatDate(vehicleReminders[0].dueDate) : 'On Schedule'}
+              </p>
+              <span className="text-[10px] text-slate-500 truncate block">
+                {vehicleReminders[0] ? `${vehicleReminders[0].category}` : 'Up to date'}
+              </span>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Maintenance</span>
+              <p className="text-lg font-extrabold text-slate-900 mt-1">
                 {formatCurrency(totalMaintenanceCost, userProfile.currency)}
               </p>
-              <span className="text-[11px] text-slate-500">{vehicleServices.length} logged services</span>
+              <span className="text-[10px] text-slate-500">{vehicleServices.length} logged records</span>
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Repair Expenses</span>
-              <p className="text-xl font-extrabold text-slate-900 mt-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Repair Expenses</span>
+              <p className="text-lg font-extrabold text-slate-900 mt-1">
                 {formatCurrency(totalRepairCost, userProfile.currency)}
               </p>
-              <span className="text-[11px] text-slate-500">{vehicleRepairs.length} repair tickets</span>
+              <span className="text-[10px] text-slate-500">{vehicleRepairs.length} tickets</span>
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Cost Per KM</span>
-              <p className="text-xl font-extrabold text-slate-900 mt-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Cost Per KM</span>
+              <p className="text-lg font-extrabold text-slate-900 mt-1">
                 {userProfile.currency}{costPerKm}
               </p>
-              <span className="text-[11px] text-slate-500">Total lifecycle burn</span>
+              <span className="text-[10px] text-slate-500">Lifecycle cost</span>
             </div>
           </div>
 
@@ -436,7 +462,32 @@ export const VehicleDetailsView: React.FC = () => {
                   )}
 
                   <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200 text-slate-500">
-                    <span>Technician: {rec.technicianName || 'Certified Technician'}</span>
+                    <div className="flex items-center gap-2">
+                      <span>Technician: {rec.technicianName || 'Certified Technician'}</span>
+                      <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
+                        <button
+                          onClick={() => {
+                            setRecordToEdit(rec);
+                            setIsEditServiceOpen(true);
+                          }}
+                          className="p-1 hover:text-slate-800 text-slate-400 rounded-sm hover:bg-slate-100"
+                          title="Edit Service Record"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete service record for "${rec.title}"?`)) {
+                              deleteMaintenanceRecord(rec.id);
+                            }
+                          }}
+                          className="p-1 hover:text-rose-600 text-slate-400 rounded-sm hover:bg-rose-50"
+                          title="Delete Service Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                     {rec.invoiceFileName && (
                       <button
                         onClick={() => setSelectedInvoice(rec.invoiceFileName || null)}
@@ -841,6 +892,17 @@ export const VehicleDetailsView: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         vehicleToEdit={vehicle}
+      />
+
+      {/* Edit Service Modal */}
+      <AddServiceModal
+        isOpen={isEditServiceOpen}
+        onClose={() => {
+          setIsEditServiceOpen(false);
+          setRecordToEdit(null);
+        }}
+        presetVehicleId={vehicle.id}
+        recordToEdit={recordToEdit}
       />
     </div>
   );

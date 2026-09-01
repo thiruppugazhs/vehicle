@@ -285,3 +285,20 @@ export interface ActivityItem {
   cost?: number;
   status?: string;
 }
+
+// Activity stream category filters
+export type ActivityCategory = "all" | "service" | "repair" | "expense" | "vehicle" | "document";
+
+export interface FleetBenchmarkKPIs {
+  averageDowntimeDays: number;
+  preventativeRatio: number;
+  averageFleetAge: number;
+  costPerOperatingDay: number;
+}
+
+export interface MaintenanceRuleTemplate {
+  name: string;
+  defaultIntervalMonths: number;
+  defaultIntervalKm: number;
+  category: MaintenanceCategory;
+}

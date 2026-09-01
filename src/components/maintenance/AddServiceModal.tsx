@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Wrench, Calendar, Gauge, Building2, User, FileText, Plus, X, Upload } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useFleet } from '../../context/FleetContext';
-import { MaintenanceCategory } from '../../types';
+import { MaintenanceCategory, MaintenanceRecord } from '../../types';
 
 interface AddServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
   presetVehicleId?: string;
+  recordToEdit?: MaintenanceRecord | null;
 }
 
 const CATEGORIES: MaintenanceCategory[] = [
@@ -33,9 +34,10 @@ const CATEGORIES: MaintenanceCategory[] = [
 export const AddServiceModal: React.FC<AddServiceModalProps> = ({
   isOpen,
   onClose,
-  presetVehicleId
+  presetVehicleId,
+  recordToEdit
 }) => {
-  const { vehicles, serviceCenters, addMaintenanceRecord, userProfile } = useFleet();
+  const { vehicles, serviceCenters, addMaintenanceRecord, updateMaintenanceRecord, userProfile } = useFleet();
 
   const [vehicleId, setVehicleId] = useState(presetVehicleId || '');
   const [serviceType, setServiceType] = useState<MaintenanceCategory>('Engine Oil');
@@ -55,21 +57,37 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({
   const [notes, setNotes] = useState('');
   const [invoiceFileName, setInvoiceFileName] = useState('');
 
-  // Update odometer and default center when vehicle changes
   useEffect(() => {
-    const selectedVeh = vehicles.find(v => v.id === vehicleId);
-    if (selectedVeh) {
-      setOdometer(selectedVeh.currentOdometer);
-    }
-  }, [vehicleId, vehicles]);
-
-  useEffect(() => {
-    if (presetVehicleId) {
+    if (recordToEdit) {
+      setVehicleId(recordToEdit.vehicleId);
+      setServiceType(recordToEdit.serviceType);
+      setTitle(recordToEdit.title);
+      setServiceDate(recordToEdit.serviceDate);
+      setOdometer(recordToEdit.odometer);
+      setServiceCenterName(recordToEdit.serviceCenterName);
+      setTechnicianName(recordToEdit.technicianName || '');
+      setPartsList(recordToEdit.partsReplaced || []);
+      setLabourCost(recordToEdit.labourCost);
+      setPartsCost(recordToEdit.partsCost);
+      setTax(recordToEdit.tax);
+      setNotes(recordToEdit.notes || '');
+      setInvoiceFileName(recordToEdit.invoiceFileName || '');
+    } else if (presetVehicleId) {
       setVehicleId(presetVehicleId);
     } else if (vehicles.length > 0 && !vehicleId) {
       setVehicleId(vehicles[0].id);
     }
-  }, [presetVehicleId, vehicles]);
+  }, [recordToEdit, presetVehicleId, vehicles]);
+
+  // Update odometer and default center when vehicle changes
+  useEffect(() => {
+    if (!recordToEdit) {
+      const selectedVeh = vehicles.find(v => v.id === vehicleId);
+      if (selectedVeh) {
+        setOdometer(selectedVeh.currentOdometer);
+      }
+    }
+  }, [vehicleId, vehicles, recordToEdit]);
 
   useEffect(() => {
     if (serviceCenters.length > 0 && !serviceCenterName) {
@@ -101,25 +119,44 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({
     e.preventDefault();
     if (!vehicleId) return;
 
-    addMaintenanceRecord({
-      vehicleId,
-      serviceType,
-      title: title.trim() || `${serviceType} Scheduled Service`,
-      serviceDate,
-      odometer: Number(odometer),
-      serviceCenterId,
-      serviceCenterName: serviceCenterName || 'Authorized Workshop',
-      technicianName,
-      partsReplaced: partsList,
-      labourCost: Number(labourCost),
-      partsCost: Number(partsCost),
-      tax: Number(tax),
-      totalCost,
-      nextServiceDate: nextDateStr,
-      nextServiceOdometer: calculatedNextOdometer,
-      notes,
-      invoiceFileName: invoiceFileName || `INVOICE-${serviceType.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}.pdf`
-    });
+    if (recordToEdit) {
+      updateMaintenanceRecord(recordToEdit.id, {
+        vehicleId,
+        serviceType,
+        title: title.trim() || `${serviceType} Scheduled Service`,
+        serviceDate,
+        odometer: Number(odometer),
+        serviceCenterName: serviceCenterName || 'Authorized Workshop',
+        technicianName,
+        partsReplaced: partsList,
+        labourCost: Number(labourCost),
+        partsCost: Number(partsCost),
+        tax: Number(tax),
+        totalCost,
+        notes,
+        invoiceFileName: invoiceFileName || undefined
+      });
+    } else {
+      addMaintenanceRecord({
+        vehicleId,
+        serviceType,
+        title: title.trim() || `${serviceType} Scheduled Service`,
+        serviceDate,
+        odometer: Number(odometer),
+        serviceCenterId,
+        serviceCenterName: serviceCenterName || 'Authorized Workshop',
+        technicianName,
+        partsReplaced: partsList,
+        labourCost: Number(labourCost),
+        partsCost: Number(partsCost),
+        tax: Number(tax),
+        totalCost,
+        nextServiceDate: nextDateStr,
+        nextServiceOdometer: calculatedNextOdometer,
+        notes,
+        invoiceFileName: invoiceFileName || `INVOICE-${serviceType.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}.pdf`
+      });
+    }
 
     onClose();
   };
@@ -128,8 +165,8 @@ export const AddServiceModal: React.FC<AddServiceModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Log Vehicle Service Record"
-      subtitle="Record completed maintenance, labor, replaced components, and workshop invoices."
+      title={recordToEdit ? `Edit Service: ${recordToEdit.title}` : 'Log Vehicle Service Record'}
+      subtitle={recordToEdit ? 'Update parts, technician notes, and invoices.' : 'Record completed maintenance, labor, replaced components, and workshop invoices.'}
       maxWidth="3xl"
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-left text-xs">

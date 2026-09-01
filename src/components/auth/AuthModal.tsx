@@ -32,6 +32,10 @@ export const AuthModal: React.FC = () => {
         setErrorMessage('Please enter your full name.');
         return;
       }
+      if (!email.includes('@')) {
+        setErrorMessage('Please enter a valid email address.');
+        return;
+      }
       if (password.length < 6) {
         setErrorMessage('Password must be at least 6 characters.');
         return;
@@ -58,6 +62,10 @@ export const AuthModal: React.FC = () => {
         setErrorMessage('Please provide both email and password.');
         return;
       }
+      if (!email.includes('@') || password.length < 4) {
+        setErrorMessage('Invalid credentials. Please check your email or password.');
+        return;
+      }
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
@@ -68,14 +76,31 @@ export const AuthModal: React.FC = () => {
         setActiveTab('dashboard');
       }, 600);
     } else if (authMode === 'forgot') {
-      if (!email.trim()) {
-        setErrorMessage('Please enter your email to receive a reset link.');
+      if (!email.trim() || !email.includes('@')) {
+        setErrorMessage('Please enter a valid email to receive a reset link.');
         return;
       }
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        setSuccessMessage(`Password reset link sent to ${email}. Check your inbox.`);
+        setSuccessMessage(`Password reset link sent to ${email}. You can simulate clicking the link below.`);
+      }, 600);
+    } else if (authMode === 'reset') {
+      if (password.length < 6) {
+        setErrorMessage('Password must be at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMessage('Passwords do not match.');
+        return;
+      }
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setSuccessMessage('Password has been reset successfully! Please sign in with your new credentials.');
+        setAuthMode('login');
+        setPassword('');
+        setConfirmPassword('');
       }, 600);
     }
   };
@@ -103,6 +128,8 @@ export const AuthModal: React.FC = () => {
           ? 'Create your FleetPulse Account'
           : authMode === 'forgot'
           ? 'Reset Your Password'
+          : authMode === 'reset'
+          ? 'Set New Password'
           : 'Welcome Back to FleetPulse'
       }
       subtitle={
@@ -110,13 +137,15 @@ export const AuthModal: React.FC = () => {
           ? 'Get started in under 2 minutes. No credit card required.'
           : authMode === 'forgot'
           ? 'Enter your registered email to receive password reset instructions.'
+          : authMode === 'reset'
+          ? 'Choose a strong new password for your FleetPulse account.'
           : 'Enter your credentials to access your vehicle command center.'
       }
       maxWidth="md"
     >
       <div className="space-y-4">
         {/* Google OAuth Option */}
-        {authMode !== 'forgot' && (
+        {authMode !== 'forgot' && authMode !== 'reset' && (
           <>
             <button
               type="button"
@@ -201,14 +230,51 @@ export const AuthModal: React.FC = () => {
             </div>
           </div>
 
-          {authMode !== 'forgot' && (
+          {authMode === 'reset' && (
+            <>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">New Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Enter at least 6 characters"
+                    className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Confirm New Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="Re-type new password"
+                    className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {authMode !== 'forgot' && authMode !== 'reset' && (
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-bold text-slate-700">Password</label>
                 {authMode === 'login' && (
                   <button
                     type="button"
-                    onClick={() => setAuthMode('forgot')}
+                    onClick={() => {
+                      setAuthMode('forgot');
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
                     className="text-xs text-amber-700 hover:text-amber-800 font-semibold"
                   >
                     Forgot password?
@@ -246,6 +312,22 @@ export const AuthModal: React.FC = () => {
             </div>
           )}
 
+          {authMode === 'forgot' && successMessage && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('reset');
+                  setSuccessMessage('');
+                  setErrorMessage('');
+                }}
+                className="w-full py-2 px-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors"
+              >
+                Simulate Opening Reset Link
+              </button>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
@@ -260,6 +342,8 @@ export const AuthModal: React.FC = () => {
               </>
             ) : authMode === 'forgot' ? (
               'Send Reset Link'
+            ) : authMode === 'reset' ? (
+              'Save New Password & Log In'
             ) : (
               'Sign In to Dashboard'
             )}
