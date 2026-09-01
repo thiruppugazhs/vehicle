@@ -1,4 +1,4 @@
-// Vehicle & Fleet Maintenance Management Platform Types
+// Vehicle & Fleet Maintenance Management Platform Types - Part 1 & Part 2
 
 export type VehicleStatus = 
   | 'Active' 
@@ -56,6 +56,16 @@ export type MaintenanceCategory =
   | 'Inspection'
   | 'Other';
 
+export interface DriverAssignmentHistory {
+  id: string;
+  driverId: string;
+  driverName: string;
+  role: 'Primary' | 'Backup';
+  assignedDate: string;
+  unassignedDate?: string;
+  notes?: string;
+}
+
 export interface Vehicle {
   id: string;
   registrationNumber: string; // e.g. "TN 01 AB 1234"
@@ -82,7 +92,10 @@ export interface Vehicle {
   // Fleet & Assignment
   department?: string; // e.g. "Logistics", "Executive", "Field Ops"
   location?: string; // e.g. "Chennai Hub", "Bangalore Depot"
-  assignedDriverId?: string;
+  assignedDriverId?: string; // Legacy / Primary
+  primaryDriverId?: string;
+  backupDriverId?: string;
+  driverHistory?: DriverAssignmentHistory[];
   
   // Calculated / Dynamic Status
   status: VehicleStatus;
@@ -96,6 +109,7 @@ export interface MaintenanceRecord {
   id: string;
   vehicleId: string;
   serviceType: MaintenanceCategory;
+  category?: MaintenanceCategory;
   title: string;
   serviceDate: string;
   odometer: number;
@@ -104,6 +118,7 @@ export interface MaintenanceRecord {
   technicianName?: string;
   partsReplaced: string[];
   labourCost: number;
+  laborCost?: number;
   partsCost: number;
   tax: number;
   totalCost: number;
@@ -149,37 +164,82 @@ export interface SmartReminder {
   description: string;
 }
 
-export type RepairStatus = 'Reported' | 'Diagnosing' | 'In Repair' | 'Quality Check' | 'Resolved';
+// Requirement 22: 7-stage repair lifecycle
+export type RepairStatus = 
+  | 'Reported' 
+  | 'Inspection' 
+  | 'Estimate' 
+  | 'Approval' 
+  | 'Repair In Progress' 
+  | 'Completed' 
+  | 'Closed';
 
+// Requirement 23: Severity Minor, Moderate, Major, Critical
+export type RepairSeverity = 'Minor' | 'Moderate' | 'Major' | 'Critical';
+
+// Requirement 23 & 24 & 25 & 35: Full repair record with cost tracking & downtime
 export interface RepairTicket {
-  id: string;
+  id: string; // Repair ID e.g. "REP-2026-081"
   vehicleId: string;
   issueTitle: string;
+  issueCategory?: string; // Engine, Brakes, Transmission, Electrical, Suspension, AC/HVAC, Tyres, Body, Other
   description: string;
-  severity: PriorityLevel;
+  severity: RepairSeverity;
   status: RepairStatus;
   reportedDate: string;
   reportedBy: string;
+  odometer?: number;
   assignedServiceCenter?: string;
-  estimatedCompletionDate?: string;
-  completedDate?: string;
+  technicianName?: string;
+  
+  // Cost Tracking (Requirement 25)
   estimatedCost?: number;
+  approvedCost?: number;
   actualCost?: number;
-  partsUsed?: string[];
+  costVariance?: number; // actual - approved
+  isUnusualVariance?: boolean; // true if actual exceeds approved by > 10% or > 1000
+
+  // Schedule & Dates (Requirement 24)
+  startDate?: string;
+  expectedCompletion?: string;
+  actualCompletion?: string;
+  
+  // Downtime Tracking (Requirement 35)
+  downtimeStart?: string; // ISO datetime or date
+  downtimeEnd?: string; // ISO datetime or date
+  downtimeHours?: number; // Calculated hours
+  downtimeFormatted?: string; // e.g. "3 days 7 hours"
   downtimeDays?: number;
+
+  partsUsed?: string[];
+  photos?: string[]; // Requirement 23 photos
+  notes?: string;
+  attachments?: string[]; // Requirement 24
   resolutionNotes?: string;
 }
 
+// Requirement 26: 12 Exact Categories
 export type ExpenseCategory = 
-  | 'Fuel' 
   | 'Maintenance' 
-  | 'Repair' 
+  | 'Repairs' 
+  | 'Tyres' 
+  | 'Battery' 
+  | 'Fuel' 
   | 'Insurance' 
-  | 'PUC / Inspection' 
-  | 'Toll & Taxes' 
+  | 'PUC' 
   | 'Permit' 
-  | 'Cleaning / Detailing' 
+  | 'Spare Parts' 
+  | 'Washing' 
+  | 'Towing' 
   | 'Other';
+
+export type PaymentMethod = 
+  | 'Cash' 
+  | 'Credit Card' 
+  | 'Debit Card' 
+  | 'UPI' 
+  | 'Net Banking' 
+  | 'Fleet Card';
 
 export interface ExpenseRecord {
   id: string;
@@ -187,31 +247,40 @@ export interface ExpenseRecord {
   category: ExpenseCategory;
   amount: number;
   date: string;
+  vendor?: string;
+  paymentMethod?: PaymentMethod;
+  description?: string;
+  invoiceFileName?: string;
+  invoiceUrl?: string;
   odometer?: number;
   litersFuel?: number; // for fuel logs
   fuelRatePerLiter?: number;
-  vendor?: string;
   receiptNumber?: string;
   notes?: string;
   createdAt: string;
 }
 
+// Requirement 28: 9 Exact Document Types
 export type DocumentType = 
-  | 'Registration Certificate (RC)' 
-  | 'Insurance Policy' 
-  | 'PUC / Emission Certificate' 
+  | 'Registration Certificate' 
+  | 'Insurance' 
+  | 'PUC' 
   | 'Fitness Certificate' 
-  | 'Commercial Permit' 
-  | 'Road Tax Receipt' 
+  | 'Permit' 
+  | 'Tax Receipt' 
+  | 'Service Invoice' 
+  | 'Repair Invoice' 
   | 'Other';
 
 export interface VehicleDocument {
   id: string;
   vehicleId: string;
+  documentName: string; // Requirement 28
   documentType: DocumentType;
   documentNumber: string;
   issueDate: string;
   expiryDate: string;
+  uploadedDate: string; // Requirement 28
   issuingAuthority?: string;
   status: 'Valid' | 'Expiring Soon' | 'Expired';
   fileUrl?: string;
@@ -219,6 +288,7 @@ export interface VehicleDocument {
   notes?: string;
 }
 
+// Requirement 30: Driver fields
 export interface Driver {
   id: string;
   name: string;
@@ -226,39 +296,83 @@ export interface Driver {
   email: string;
   licenseNumber: string;
   licenseExpiry: string;
-  status: 'Active' | 'On Leave' | 'Inactive';
   assignedVehicleId?: string;
-  experienceYears: number;
+  joiningDate?: string; // Requirement 30
+  status: 'Active' | 'On Leave' | 'Inactive'; // Requirement 30
+  emergencyContact?: string; // Requirement 30
+  experienceYears?: number;
   avatarUrl?: string;
-  emergencyContact?: string;
 }
 
+// Requirement 32: Service Center fields
 export interface ServiceCenter {
   id: string;
   name: string;
   contactPerson: string;
+  address: string;
+  city?: string;
   phone: string;
   email: string;
-  address: string;
-  city: string;
-  rating: number;
-  specialties: string[];
-  isAuthorized: boolean;
+  servicesOffered: string[]; // Requirement 32
+  specialties?: string[];
+  rating: number; // 1-5 stars
   notes?: string;
+  isAuthorized?: boolean;
 }
+
+export type OperationalRole = 'Owner' | 'Fleet Manager' | 'Driver' | 'Technician';
 
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   role: 'Individual Vehicle Owner' | 'Business Owner' | 'Fleet Manager' | 'Transport Company';
+  operationalRole?: OperationalRole; // Requirement 41
   fleetSizeBracket: '1' | '2–5' | '6–20' | '21–50' | '50+';
   currency: string;
   distanceUnit: 'km' | 'miles';
+  dateFormat?: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD'; // Requirement 43 & 60
+  language?: string;
   organizationName?: string;
+  organizationId?: string;
   phone?: string;
   avatarUrl?: string;
   isOnboarded: boolean;
+}
+
+// Requirement 21 & 40: Notification Preferences & Types
+export type NotificationType = 
+  | 'Service due' 
+  | 'Service overdue' 
+  | 'Insurance expiry' 
+  | 'PUC expiry' 
+  | 'Repair completed' 
+  | 'Repair delayed' 
+  | 'New expense' 
+  | 'Driver license expiry' 
+  | 'Document expiry'
+  | 'service_due' 
+  | 'service_overdue' 
+  | 'insurance_expiry' 
+  | 'puc_expiry' 
+  | 'repair_completed' 
+  | 'repair_delayed' 
+  | 'new_expense' 
+  | 'driver_license_expiry' 
+  | 'document_expiry';
+
+export interface NotificationPreferences {
+  inAppNotifications: boolean;
+  emailNotifications: boolean;
+  emailAddress: string;
+  browserPushNotifications: boolean;
+  pushPermission: 'default' | 'granted' | 'denied';
+  notify30DaysBefore: boolean;
+  notify15DaysBefore: boolean;
+  notify7DaysBefore: boolean;
+  notify1DayBefore: boolean;
+  notifyOnExpiry: boolean;
+  criticalAlertsImmediate: boolean;
 }
 
 export interface NotificationItem {
@@ -266,6 +380,8 @@ export interface NotificationItem {
   title: string;
   message: string;
   type: 'urgent' | 'warning' | 'info' | 'success';
+  notificationType?: NotificationType;
+  category?: NotificationType;
   timestamp: string;
   isRead: boolean;
   linkTo?: {
@@ -286,7 +402,6 @@ export interface ActivityItem {
   status?: string;
 }
 
-// Activity stream category filters
 export type ActivityCategory = "all" | "service" | "repair" | "expense" | "vehicle" | "document";
 
 export interface FleetBenchmarkKPIs {
@@ -301,4 +416,65 @@ export interface MaintenanceRuleTemplate {
   defaultIntervalMonths: number;
   defaultIntervalKm: number;
   category: MaintenanceCategory;
+}
+
+// Requirement 42: Organization Support
+export interface Organization {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  address: string;
+  city?: string;
+  contactPhone: string;
+  contactEmail: string;
+  taxId?: string;
+  plan: 'Starter' | 'Growth' | 'Enterprise';
+  createdAt: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organizationId: string;
+  userId: string;
+  name: string;
+  email: string;
+  role: OperationalRole;
+  joinedAt: string;
+  avatarUrl?: string;
+}
+
+// Requirement 47: Audit Log Timeline
+export interface AuditLogEntry {
+  id: string;
+  actorName: string;
+  actorRole: string;
+  action: string; // e.g. "Vehicle created", "Service added", "Repair moved to Completed"
+  entityType: 'Vehicle' | 'Maintenance' | 'Repair' | 'Expense' | 'Document' | 'Driver' | 'Service Center';
+  entityId?: string;
+  entityName?: string;
+  description: string;
+  timestamp: string;
+}
+
+// Requirement 45: Odometer logs
+export interface VehicleOdometerLog {
+  id: string;
+  vehicleId: string;
+  odometer: number;
+  recordedBy: string;
+  date: string;
+  notes?: string;
+}
+
+// Requirement 58: Smart Insights
+export interface SmartInsight {
+  id: string;
+  type: 'cost' | 'repair' | 'schedule' | 'document';
+  title: string;
+  description: string;
+  severity: 'info' | 'warning' | 'critical' | 'positive';
+  metric?: string;
+  trend?: string;
+  actionTab?: string;
+  timestamp: string;
 }

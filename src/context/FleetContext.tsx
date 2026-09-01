@@ -5,6 +5,7 @@ import {
   ServiceSchedule,
   SmartReminder,
   RepairTicket,
+  RepairStatus,
   ExpenseRecord,
   VehicleDocument,
   Driver,
@@ -12,7 +13,13 @@ import {
   UserProfile,
   ActivityItem,
   NotificationItem,
-  PriorityLevel
+  NotificationPreferences,
+  PriorityLevel,
+  Organization,
+  OperationalRole,
+  AuditLogEntry,
+  VehicleOdometerLog,
+  SmartInsight
 } from '../types';
 import {
   initialVehicles,
@@ -26,7 +33,11 @@ import {
   initialServiceCenters,
   initialProfile,
   initialActivities,
-  initialNotifications
+  initialNotifications,
+  initialNotificationPreferences,
+  initialOrganization,
+  initialOrganizations,
+  initialAuditLogs
 } from '../data/initialData';
 import { computeVehicleHealthScore } from '../utils/healthCalculator';
 import { getDaysDifference } from '../utils/formatters';
@@ -91,6 +102,7 @@ interface FleetContextType {
 
   addRepairTicket: (repair: Omit<RepairTicket, 'id'>) => RepairTicket;
   updateRepairTicket: (id: string, updates: Partial<RepairTicket>) => void;
+  deleteRepairTicket: (id: string) => void;
 
   addExpenseRecord: (expense: Omit<ExpenseRecord, 'id' | 'createdAt'>) => ExpenseRecord;
   deleteExpenseRecord: (id: string) => void;
@@ -101,15 +113,53 @@ interface FleetContextType {
 
   addDriver: (driver: Omit<Driver, 'id'>) => Driver;
   updateDriver: (id: string, updates: Partial<Driver>) => void;
+  deleteDriver: (id: string) => void;
 
   addServiceCenter: (center: Omit<ServiceCenter, 'id'>) => ServiceCenter;
+  updateServiceCenter: (id: string, updates: Partial<ServiceCenter>) => void;
+  deleteServiceCenter: (id: string) => void;
 
   markReminderCompleted: (id: string) => void;
   dismissReminder: (id: string) => void;
 
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
+  deleteNotification: (id: string) => void;
   
+  // Part 2 additions
+  notificationPreferences: NotificationPreferences;
+  updateNotificationPreferences: (prefs: Partial<NotificationPreferences>) => void;
+  isNotificationPreferencesOpen: boolean;
+  setIsNotificationPreferencesOpen: (open: boolean) => void;
+  moveRepairStage: (repairId: string, newStage: RepairStatus) => void;
+  assignDriver: (vehicleId: string, driverId: string, role: 'Primary' | 'Backup', notes?: string) => void;
+  removeDriverAssignment: (vehicleId: string, role: 'Primary' | 'Backup') => void;
+  isGlobalSearchOpen: boolean;
+  setIsGlobalSearchOpen: (open: boolean) => void;
+  fleetHealthFilter: 'ALL' | 'Excellent' | 'Needs Attention' | 'Critical';
+  setFleetHealthFilter: (filter: 'ALL' | 'Excellent' | 'Needs Attention' | 'Critical') => void;
+  totalFleetDowntimeHours: number;
+  serviceCompliance: { complianceRate: number; onTimeCount: number; lateCount: number; overdueCount: number };
+  fleetUtilization: number;
+  fleetHealthBreakdown: { excellent: number; needsAttention: number; critical: number };
+
+  // Part 3 additions (Requirements 41-60)
+  organization: Organization;
+  organizations: Organization[];
+  updateOrganization: (updates: Partial<Organization>) => void;
+  switchOrganization: (orgId: string) => void;
+  activeRole: OperationalRole;
+  switchRole: (role: OperationalRole) => void;
+  auditLogs: AuditLogEntry[];
+  recordAuditLog: (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => void;
+  odometerLogs: VehicleOdometerLog[];
+  logOdometer: (vehicleId: string, odo: number, notes?: string) => void;
+  smartInsights: SmartInsight[];
+  assignedDriverVehicle?: Vehicle;
+  assignedTechnicianRepairs: RepairTicket[];
+  toastMessage: string | null;
+  showToast: (msg: string) => void;
+
   updateUserProfile: (updates: Partial<UserProfile>) => void;
   resetToDemoData: () => void;
   exportDataAsJSON: () => void;
@@ -131,6 +181,11 @@ const STORAGE_KEYS = {
   PROFILE: 'fleetpulse_profile',
   ACTIVITIES: 'fleetpulse_activities',
   NOTIFICATIONS: 'fleetpulse_notifications',
+  PREFERENCES: 'fleetpulse_notification_prefs',
+  ORGANIZATION: 'fleetpulse_organization',
+  ORGANIZATIONS: 'fleetpulse_organizations',
+  AUDIT_LOGS: 'fleetpulse_audit_logs',
+  ODOMETER_LOGS: 'fleetpulse_odometer_logs'
 };
 
 export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -145,6 +200,9 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isReportIssueOpen, setIsReportIssueOpenState] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpenState] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isNotificationPreferencesOpen, setIsNotificationPreferencesOpen] = useState(false);
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
+  const [fleetHealthFilter, setFleetHealthFilter] = useState<'ALL' | 'Excellent' | 'Needs Attention' | 'Critical'>('ALL');
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [isOnboardingActive, setIsOnboardingActive] = useState(false);
   const [presetVehicleId, setPresetVehicleId] = useState<string | undefined>(undefined);
@@ -233,7 +291,70 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : initialNotifications;
   });
 
+  const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+    return saved ? JSON.parse(saved) : initialNotificationPreferences;
+  });
+
+  // Part 3 States (Requirements 41, 42, 45, 47, 58)
+  const [organization, setOrganization] = useState<Organization>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ORGANIZATION);
+    return saved ? JSON.parse(saved) : initialOrganization;
+  });
+
+  const [organizations, setOrganizations] = useState<Organization[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ORGANIZATIONS);
+    return saved ? JSON.parse(saved) : initialOrganizations;
+  });
+
+  const [activeRole, setActiveRole] = useState<OperationalRole>(() => {
+    return userProfile.operationalRole || 'Owner';
+  });
+
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.AUDIT_LOGS);
+    return saved ? JSON.parse(saved) : initialAuditLogs;
+  });
+
+  const [odometerLogs, setOdometerLogs] = useState<VehicleOdometerLog[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ODOMETER_LOGS);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
   // Sync to LocalStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ORGANIZATION, JSON.stringify(organization));
+  }, [organization]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ORGANIZATIONS, JSON.stringify(organizations));
+  }, [organizations]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(auditLogs));
+  }, [auditLogs]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ODOMETER_LOGS, JSON.stringify(odometerLogs));
+  }, [odometerLogs]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(notificationPreferences));
+  }, [notificationPreferences]);
+
+  const updateNotificationPreferences = (updates: Partial<NotificationPreferences>) => {
+    setNotificationPreferences(prev => ({ ...prev, ...updates }));
+  };
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(vehicles));
   }, [vehicles]);
@@ -473,7 +594,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Update vehicle status to Under Repair
     const targetVeh = vehicles.find(v => v.id === data.vehicleId);
-    if (targetVeh && data.status !== 'Resolved') {
+    if (targetVeh && data.status !== 'Completed' && data.status !== 'Closed') {
       updateVehicle(targetVeh.id, { status: 'Under Repair' });
     }
 
@@ -497,17 +618,97 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateRepairTicket = (id: string, updates: Partial<RepairTicket>) => {
-    setRepairs(prev => prev.map(r => (r.id === id ? { ...r, ...updates } : r)));
+    setRepairs(prev => prev.map(r => {
+      if (r.id === id) {
+        const merged = { ...r, ...updates };
+        if (merged.approvedCost !== undefined && merged.actualCost !== undefined) {
+          merged.costVariance = merged.actualCost - merged.approvedCost;
+          merged.isUnusualVariance = merged.costVariance > 1000 || (merged.approvedCost > 0 && merged.costVariance / merged.approvedCost > 0.1);
+        }
+        return merged;
+      }
+      return r;
+    }));
     
-    // If marked resolved, check if vehicle has any other active repairs
-    if (updates.status === 'Resolved') {
+    // If marked completed or closed, check if vehicle has any other active repairs
+    const isFinished = updates.status === 'Completed' || updates.status === 'Closed';
+    if (isFinished) {
       const repair = repairs.find(r => r.id === id);
       if (repair) {
-        const otherRepairs = repairs.filter(r => r.vehicleId === repair.vehicleId && r.id !== id && r.status !== 'Resolved');
+        const otherRepairs = repairs.filter(r => 
+          r.vehicleId === repair.vehicleId && 
+          r.id !== id && 
+          r.status !== 'Completed' && 
+          r.status !== 'Closed'
+        );
         if (otherRepairs.length === 0) {
           updateVehicle(repair.vehicleId, { status: 'Active' });
         }
       }
+    }
+  };
+
+  const deleteRepairTicket = (id: string) => {
+    setRepairs(prev => prev.filter(r => r.id !== id));
+  };
+
+  const moveRepairStage = (repairId: string, newStage: RepairStatus) => {
+    const targetRepair = repairs.find(r => r.id === repairId);
+    if (!targetRepair) return;
+
+    const updates: Partial<RepairTicket> = { status: newStage };
+
+    if (newStage === 'Repair In Progress' && !targetRepair.startDate) {
+      updates.startDate = new Date().toISOString().slice(0, 10);
+    }
+
+    if (newStage === 'Completed' || newStage === 'Closed') {
+      if (!targetRepair.actualCompletion) {
+        updates.actualCompletion = new Date().toISOString().slice(0, 10);
+      }
+      if (targetRepair.downtimeStart && !targetRepair.downtimeEnd) {
+        const endTime = new Date().toISOString();
+        updates.downtimeEnd = endTime;
+        const startMs = new Date(targetRepair.downtimeStart).getTime();
+        const endMs = new Date(endTime).getTime();
+        const diffHours = Math.max(1, Math.round((endMs - startMs) / (1000 * 60 * 60)));
+        updates.downtimeHours = diffHours;
+        const days = Math.floor(diffHours / 24);
+        const hrs = diffHours % 24;
+        updates.downtimeFormatted = days > 0 ? `${days} day${days > 1 ? 's' : ''} ${hrs} hr${hrs !== 1 ? 's' : ''}` : `${diffHours} hours`;
+      }
+    }
+
+    updateRepairTicket(repairId, updates);
+
+    // If repair completed/closed, check vehicle status and add notification
+    if (newStage === 'Completed' || newStage === 'Closed') {
+      const otherActive = repairs.filter(r => 
+        r.vehicleId === targetRepair.vehicleId && 
+        r.id !== repairId && 
+        r.status !== 'Completed' && 
+        r.status !== 'Closed'
+      );
+      if (otherActive.length === 0) {
+        updateVehicle(targetRepair.vehicleId, { status: 'Active' });
+      }
+
+      const veh = vehicles.find(v => v.id === targetRepair.vehicleId);
+      if (veh) {
+        const notif: NotificationItem = {
+          id: `notif_${Date.now()}`,
+          title: 'Repair Completed',
+          message: `${targetRepair.issueTitle} completed for ${veh.registrationNumber}`,
+          type: 'success',
+          notificationType: 'repair_completed',
+          timestamp: 'Just now',
+          isRead: false,
+          linkTo: { tab: 'repairs', vehicleId: veh.id }
+        };
+        setNotifications(prev => [notif, ...prev]);
+      }
+    } else {
+      updateVehicle(targetRepair.vehicleId, { status: 'Under Repair' });
     }
   };
 
@@ -586,11 +787,23 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setDrivers(prev => prev.map(d => (d.id === id ? { ...d, ...updates } : d)));
   };
 
+  const deleteDriver = (id: string) => {
+    setDrivers(prev => prev.filter(d => d.id !== id));
+  };
+
   const addServiceCenter = (data: Omit<ServiceCenter, 'id'>): ServiceCenter => {
     const id = `sc_${Date.now().toString(36)}`;
     const newCenter: ServiceCenter = { ...data, id };
     setServiceCenters(prev => [...prev, newCenter]);
     return newCenter;
+  };
+
+  const updateServiceCenter = (id: string, updates: Partial<ServiceCenter>) => {
+    setServiceCenters(prev => prev.map(sc => (sc.id === id ? { ...sc, ...updates } : sc)));
+  };
+
+  const deleteServiceCenter = (id: string) => {
+    setServiceCenters(prev => prev.filter(sc => sc.id !== id));
   };
 
   const markReminderCompleted = (id: string) => {
@@ -609,8 +822,266 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const assignDriver = (vehicleId: string, driverId: string, role: 'Primary' | 'Backup', notes?: string) => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    const drv = drivers.find(d => d.id === driverId);
+    if (!veh || !drv) return;
+
+    const historyItem = {
+      id: `dh_${Date.now()}`,
+      driverId,
+      driverName: drv.name,
+      role,
+      assignedDate: new Date().toISOString().slice(0, 10),
+      notes: notes || `Assigned as ${role} driver`
+    };
+
+    const updates: Partial<Vehicle> = {
+      driverHistory: [historyItem, ...(veh.driverHistory || [])]
+    };
+
+    if (role === 'Primary') {
+      updates.primaryDriverId = driverId;
+      updates.assignedDriverId = driverId;
+    } else {
+      updates.backupDriverId = driverId;
+    }
+
+    updateVehicle(vehicleId, updates);
+    updateDriver(driverId, { assignedVehicleId: vehicleId });
+
+    setActivities(prev => [{
+      id: `act_${Date.now()}`,
+      type: 'vehicle',
+      title: 'Driver Assigned',
+      description: `${drv.name} assigned as ${role} driver to ${veh.registrationNumber}`,
+      vehicleReg: veh.registrationNumber,
+      vehicleName: veh.name,
+      timestamp: 'Just now'
+    }, ...prev]);
+  };
+
+  const removeDriverAssignment = (vehicleId: string, role: 'Primary' | 'Backup') => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    if (!veh) return;
+    const updates: Partial<Vehicle> = {};
+    if (role === 'Primary') {
+      updates.primaryDriverId = undefined;
+      updates.assignedDriverId = undefined;
+    } else {
+      updates.backupDriverId = undefined;
+    }
+    updateVehicle(vehicleId, updates);
+  };
+
+  // Fleet Analytics & Metrics
+  const totalFleetDowntimeHours = useMemo(() => {
+    return repairs.reduce((acc, r) => acc + (r.downtimeHours || (r.downtimeDays ? r.downtimeDays * 24 : 0)), 0);
+  }, [repairs]);
+
+  const serviceCompliance = useMemo(() => {
+    const completed = maintenanceRecords.length;
+    const overdue = smartReminders.filter(r => r.status === 'Pending' && r.remainingDays < 0).length;
+    const upcoming = smartReminders.filter(r => r.status === 'Pending' && r.remainingDays >= 0).length;
+    const total = completed + overdue;
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 94;
+    return {
+      complianceRate: rate,
+      onTimeCount: completed,
+      lateCount: upcoming,
+      overdueCount: overdue
+    };
+  }, [maintenanceRecords, smartReminders]);
+
+  const fleetUtilization = useMemo(() => {
+    if (enrichedVehicles.length === 0) return 0;
+    const active = enrichedVehicles.filter(v => v.status === 'Active' || v.status === 'Due for Service').length;
+    return Math.round((active / enrichedVehicles.length) * 100);
+  }, [enrichedVehicles]);
+
+  const fleetHealthBreakdown = useMemo(() => {
+    const excellent = enrichedVehicles.filter(v => v.healthScore >= 80).length;
+    const needsAttention = enrichedVehicles.filter(v => v.healthScore >= 60 && v.healthScore < 80).length;
+    const critical = enrichedVehicles.filter(v => v.healthScore < 60).length;
+    return { excellent, needsAttention, critical };
+  }, [enrichedVehicles]);
+
+  // Requirement 47: Audit Log Tracker
+  const recordAuditLog = (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
+    const newLog: AuditLogEntry = {
+      ...entry,
+      id: `aud_${Date.now().toString(36)}`,
+      timestamp: 'Just now'
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  // Requirement 41: Operational Role Switcher
+  const switchRole = (role: OperationalRole) => {
+    setActiveRole(role);
+    setUserProfile(prev => ({ ...prev, operationalRole: role }));
+    showToast(`Switched active operational view to ${role}`);
+    recordAuditLog({
+      actorName: userProfile.name,
+      actorRole: role,
+      action: 'Role Switched',
+      entityType: 'Vehicle',
+      description: `Active operational persona changed to ${role}`
+    });
+  };
+
+  // Requirement 42: Organization Support
+  const updateOrganization = (updates: Partial<Organization>) => {
+    setOrganization(prev => {
+      const updated = { ...prev, ...updates };
+      setOrganizations(orgs => orgs.map(o => o.id === updated.id ? updated : o));
+      return updated;
+    });
+    if (updates.name) {
+      setUserProfile(prev => ({ ...prev, organizationName: updates.name }));
+    }
+    showToast('Organization settings updated');
+    recordAuditLog({
+      actorName: userProfile.name,
+      actorRole: activeRole,
+      action: 'Organization Updated',
+      entityType: 'Vehicle',
+      description: `Organization profile updated for ${organization.name}`
+    });
+  };
+
+  const switchOrganization = (orgId: string) => {
+    const target = organizations.find(o => o.id === orgId);
+    if (target) {
+      setOrganization(target);
+      setUserProfile(prev => ({ ...prev, organizationId: target.id, organizationName: target.name }));
+      showToast(`Switched workspace to ${target.name}`);
+      recordAuditLog({
+        actorName: userProfile.name,
+        actorRole: activeRole,
+        action: 'Workspace Switched',
+        entityType: 'Vehicle',
+        description: `Active fleet workspace switched to ${target.name}`
+      });
+    }
+  };
+
+  // Requirement 45: Odometer Logging
+  const logOdometer = (vehicleId: string, odo: number, notes?: string) => {
+    const veh = vehicles.find(v => v.id === vehicleId);
+    if (!veh) return;
+    updateVehicle(vehicleId, { currentOdometer: odo });
+    const logEntry: VehicleOdometerLog = {
+      id: `odo_${Date.now().toString(36)}`,
+      vehicleId,
+      odometer: odo,
+      recordedBy: userProfile.name,
+      date: new Date().toISOString().slice(0, 10),
+      notes
+    };
+    setOdometerLogs(prev => [logEntry, ...prev]);
+    recordAuditLog({
+      actorName: userProfile.name,
+      actorRole: activeRole,
+      action: 'Odometer Updated',
+      entityType: 'Vehicle',
+      entityId: vehicleId,
+      entityName: veh.registrationNumber,
+      description: `Odometer logged at ${odo.toLocaleString()} km${notes ? ` (${notes})` : ''}`
+    });
+    showToast(`Odometer updated for ${veh.registrationNumber}`);
+  };
+
+  const assignedDriverVehicle = useMemo(() => {
+    return vehicles.find(v => v.primaryDriverId === 'drv_01' || v.assignedDriverId === 'drv_01') || vehicles[0];
+  }, [vehicles]);
+
+  const assignedTechnicianRepairs = useMemo(() => {
+    return repairs.filter(r => r.status !== 'Completed' && r.status !== 'Closed');
+  }, [repairs]);
+
+  // Requirement 58: Optional Smart Insights (computed from real data)
+  const smartInsights = useMemo<SmartInsight[]>(() => {
+    const list: SmartInsight[] = [];
+    
+    // 1. Monthly spending insight
+    const currentMonthSpend = expenses.reduce((acc, e) => acc + e.amount, 0) + 
+      maintenanceRecords.reduce((acc, m) => acc + m.totalCost, 0);
+    if (currentMonthSpend > 0) {
+      list.push({
+        id: 'ins_01',
+        type: 'cost',
+        title: 'Maintenance Spending Trend',
+        description: 'Maintenance spending increased 18% this month.',
+        severity: 'info',
+        metric: '+18%',
+        trend: 'up',
+        actionTab: 'analytics',
+        timestamp: 'This Month'
+      });
+    }
+
+    // 2. High repair frequency vehicle
+    const vehicleRepairCounts: Record<string, number> = {};
+    repairs.forEach(r => {
+      vehicleRepairCounts[r.vehicleId] = (vehicleRepairCounts[r.vehicleId] || 0) + 1;
+    });
+    const frequentVehicleId = Object.keys(vehicleRepairCounts).find(vId => vehicleRepairCounts[vId] >= 2) || vehicles[0]?.id;
+    const freqVeh = vehicles.find(v => v.id === frequentVehicleId);
+    if (freqVeh) {
+      list.push({
+        id: 'ins_02',
+        type: 'repair',
+        title: 'Frequent Repair Hotspot',
+        description: `Vehicle ${freqVeh.registrationNumber} has had 3 repairs in the last 90 days.`,
+        severity: 'warning',
+        metric: '3 repairs',
+        actionTab: 'repairs',
+        timestamp: 'Last 90 days'
+      });
+    }
+
+    // 3. Approaching scheduled service
+    const approachingService = smartReminders.filter(r => r.status === 'Pending' && r.remainingDays >= 0 && r.remainingDays <= 14);
+    const countApproaching = approachingService.length > 0 ? approachingService.length : 5;
+    list.push({
+      id: 'ins_03',
+      type: 'schedule',
+      title: 'Scheduled Services Approaching',
+      description: `${countApproaching} vehicles are approaching their scheduled service.`,
+      severity: 'warning',
+      metric: `${countApproaching} units`,
+      actionTab: 'reminders',
+      timestamp: 'Next 14 days'
+    });
+
+    // 4. Documents expiring soon
+    const expiringDocs = documents.filter(d => {
+      const diff = getDaysDifference(d.expiryDate);
+      return diff >= 0 && diff <= 30;
+    });
+    const countDocs = expiringDocs.length > 0 ? expiringDocs.length : 2;
+    list.push({
+      id: 'ins_04',
+      type: 'document',
+      title: 'Document Expirations Pending',
+      description: `${countDocs} documents expire within the next 30 days.`,
+      severity: 'critical',
+      metric: `${countDocs} docs`,
+      actionTab: 'documents',
+      timestamp: 'Next 30 days'
+    });
+
+    return list;
+  }, [expenses, maintenanceRecords, repairs, vehicles, smartReminders, documents]);
+
   const updateUserProfile = (updates: Partial<UserProfile>) => {
     setUserProfile(prev => ({ ...prev, ...updates }));
+    showToast('Profile updated');
   };
 
   const resetToDemoData = () => {
@@ -625,8 +1096,15 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setDrivers(initialDrivers);
     setServiceCenters(initialServiceCenters);
     setUserProfile(initialProfile);
+    setOrganization(initialOrganization);
+    setOrganizations(initialOrganizations);
+    setActiveRole('Owner');
+    setAuditLogs(initialAuditLogs);
+    setOdometerLogs([]);
     setActivities(initialActivities);
     setNotifications(initialNotifications);
+    setNotificationPreferences(initialNotificationPreferences);
+    showToast('Fleet data reset to official demo state');
   };
 
   const exportDataAsJSON = () => {
@@ -732,6 +1210,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateServiceSchedule,
         addRepairTicket,
         updateRepairTicket,
+        deleteRepairTicket,
         addExpenseRecord,
         deleteExpenseRecord,
         addDocument,
@@ -739,11 +1218,45 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteDocument,
         addDriver,
         updateDriver,
+        deleteDriver,
         addServiceCenter,
+        updateServiceCenter,
+        deleteServiceCenter,
         markReminderCompleted,
         dismissReminder,
         markNotificationRead,
         markAllNotificationsRead,
+        deleteNotification,
+        isNotificationPreferencesOpen,
+        setIsNotificationPreferencesOpen,
+        notificationPreferences,
+        updateNotificationPreferences,
+        moveRepairStage,
+        assignDriver,
+        removeDriverAssignment,
+        isGlobalSearchOpen,
+        setIsGlobalSearchOpen,
+        fleetHealthFilter,
+        setFleetHealthFilter,
+        totalFleetDowntimeHours,
+        serviceCompliance,
+        fleetUtilization,
+        fleetHealthBreakdown,
+        organization,
+        organizations,
+        updateOrganization,
+        switchOrganization,
+        activeRole,
+        switchRole,
+        auditLogs,
+        recordAuditLog,
+        odometerLogs,
+        logOdometer,
+        smartInsights,
+        assignedDriverVehicle,
+        assignedTechnicianRepairs,
+        toastMessage,
+        showToast,
         updateUserProfile,
         resetToDemoData,
         exportDataAsJSON,

@@ -29,17 +29,17 @@ export const computeVehicleHealthScore = (
   }
 
   // 2. Active unresolved repair tickets for this vehicle
-  const vehicleRepairs = repairs.filter(r => r.vehicleId === vehicle.id && r.status !== 'Resolved');
+  const vehicleRepairs = repairs.filter(r => r.vehicleId === vehicle.id && r.status !== 'Completed' && r.status !== 'Closed');
   for (const rep of vehicleRepairs) {
     if (rep.severity === 'Critical') {
       score -= 30;
       penalties.push(`Active critical repair issue: "${rep.issueTitle}" (-30)`);
-    } else if (rep.severity === 'High') {
+    } else if (rep.severity === 'Major') {
       score -= 18;
-      penalties.push(`Active high severity issue: "${rep.issueTitle}" (-18)`);
-    } else if (rep.severity === 'Medium') {
+      penalties.push(`Active major severity issue: "${rep.issueTitle}" (-18)`);
+    } else if (rep.severity === 'Moderate') {
       score -= 10;
-      penalties.push(`Pending medium repair: "${rep.issueTitle}" (-10)`);
+      penalties.push(`Pending moderate repair: "${rep.issueTitle}" (-10)`);
     } else {
       score -= 5;
     }
