@@ -42,6 +42,7 @@ import {
 import { computeVehicleHealthScore } from '../utils/healthCalculator';
 import { getDaysDifference } from '../utils/formatters';
 import { runAutomatedNotificationScan } from '../services/notificationWorker';
+import { initializeWebMessaging, registerDeviceTokenInFirestore, subscribeToOrgCollection } from '../services/firebase';
 
 interface FleetContextType {
   // Navigation & UI state
@@ -472,6 +473,50 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const interval = setInterval(runScan, 60000);
     return () => clearInterval(interval);
   }, [vehicles, schedules, documents, drivers, repairs, notifications]);
+
+  // Requirement 4, 7, 8, 38 & 39: Shared Realtime Firebase Sync & FCM Device Tokens
+  useEffect(() => {
+    // 1. Initialize Web FCM & register token in Firestore device_tokens collection
+    initializeWebMessaging().then(token => {
+      if (token) {
+        registerDeviceTokenInFirestore(userProfile.id, organization.id, token, 'web');
+      }
+    });
+
+    // 2. Real-time Firestore sync listeners
+    const unsubVehicles = subscribeToOrgCollection<Vehicle>('vehicles', organization.id, (remoteVehicles) => {
+      if (remoteVehicles && remoteVehicles.length > 0) {
+        setVehicles(prev => {
+          const merged = [...prev];
+          for (const rv of remoteVehicles) {
+            const idx = merged.findIndex(v => v.id === rv.id);
+            if (idx !== -1) merged[idx] = { ...merged[idx], ...rv };
+            else merged.unshift(rv);
+          }
+          return merged;
+        });
+      }
+    });
+
+    const unsubRepairs = subscribeToOrgCollection<RepairTicket>('repair_tickets', organization.id, (remoteRepairs) => {
+      if (remoteRepairs && remoteRepairs.length > 0) {
+        setRepairs(prev => {
+          const merged = [...prev];
+          for (const rr of remoteRepairs) {
+            const idx = merged.findIndex(r => r.id === rr.id);
+            if (idx !== -1) merged[idx] = { ...merged[idx], ...rr };
+            else merged.unshift(rr);
+          }
+          return merged;
+        });
+      }
+    });
+
+    return () => {
+      unsubVehicles();
+      unsubRepairs();
+    };
+  }, [organization.id, userProfile.id]);
 
   // Recalculate dynamic vehicle health and reminders (Requirement 42: Organization Scoping)
   const enrichedVehicles = useMemo(() => {

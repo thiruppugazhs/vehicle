@@ -1,0 +1,17 @@
+﻿rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Vehicle images, repair photos, and invoices
+    match /organizations/{orgId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated()
+        && request.resource.size < 15 * 1024 * 1024 // 15 MB limit
+        && request.resource.contentType.matches('image/.*|application/pdf');
+    }
+  }
+}

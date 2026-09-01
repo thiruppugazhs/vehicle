@@ -1,0 +1,181 @@
+﻿rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isMemberOf(orgId) {
+      return isAuthenticated() && (
+        request.auth.token.organizationId == orgId ||
+        getUserData().organizationId == orgId
+      );
+    }
+
+    function getUserRole() {
+      return getUserData().role;
+    }
+
+    function isOwner() {
+      return isAuthenticated() && getUserRole() == 'Owner';
+    }
+
+    function isFleetManager() {
+      return isAuthenticated() && (getUserRole() == 'Fleet Manager' || isOwner());
+    }
+
+    function isDriver() {
+      return isAuthenticated() && getUserRole() == 'Driver';
+    }
+
+    function isTechnician() {
+      return isAuthenticated() && getUserRole() == 'Technician';
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isOwner());
+      allow delete: if isOwner();
+    }
+
+    // Organizations Collection
+    match /organizations/{orgId} {
+      allow read: if isMemberOf(orgId);
+      allow create: if isAuthenticated();
+      allow update, delete: if isMemberOf(orgId) && isOwner();
+    }
+
+    // Organization Members Collection
+    match /organization_members/{memberId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Vehicles Collection
+    match /vehicles/{vehicleId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && isFleetManager()
+        && request.resource.data.currentOdometer >= 0;
+      allow update: if isMemberOf(resource.data.organizationId) && (
+        isFleetManager() ||
+        (isDriver() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentOdometer', 'updatedAt']))
+      );
+      allow delete: if isMemberOf(resource.data.organizationId) && isOwner();
+    }
+
+    // Vehicle Documents Collection
+    match /vehicle_documents/{docId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Maintenance Records Collection
+    match /maintenance_records/{recordId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && (isFleetManager() || isTechnician())
+        && request.resource.data.totalCost >= 0;
+      allow update: if isMemberOf(resource.data.organizationId) && (isFleetManager() || isTechnician());
+      allow delete: if isMemberOf(resource.data.organizationId) && isOwner();
+    }
+
+    // Maintenance Schedules Collection
+    match /maintenance_schedules/{scheduleId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Repair Tickets Collection
+    match /repair_tickets/{ticketId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && isAuthenticated();
+      allow update: if isMemberOf(resource.data.organizationId) && (isFleetManager() || isTechnician());
+      allow delete: if isMemberOf(resource.data.organizationId) && isOwner();
+    }
+
+    // Repair Updates Collection
+    match /repair_updates/{updateId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && (isFleetManager() || isTechnician());
+    }
+
+    // Expenses Collection
+    match /expenses/{expenseId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && (isFleetManager() || isDriver())
+        && request.resource.data.amount >= 0;
+      allow update, delete: if isMemberOf(resource.data.organizationId) && isFleetManager();
+    }
+
+    // Drivers Collection
+    match /drivers/{driverId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Driver Vehicle Assignments Collection
+    match /driver_vehicle_assignments/{assignmentId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Service Centers Collection
+    match /service_centers/{centerId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Notifications Collection
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.organizationId == getUserData().organizationId);
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource.data.organizationId == getUserData().organizationId);
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Notification Preferences Collection
+    match /notification_preferences/{prefId} {
+      allow read, write: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // Odometer Logs Collection (Immutable Audit)
+    match /vehicle_odometer_logs/{logId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && isAuthenticated();
+      allow update, delete: if false; // Immutable audit log
+    }
+
+    // Downtime Records Collection
+    match /downtime_records/{downtimeId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Activity Logs Collection (Immutable Audit)
+    match /activity_logs/{activityId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow create: if isMemberOf(request.resource.data.organizationId) && isAuthenticated();
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    // Reports Collection
+    match /reports/{reportId} {
+      allow read: if isMemberOf(resource.data.organizationId);
+      allow write: if isMemberOf(request.resource.data.organizationId) && isFleetManager();
+    }
+
+    // Device Tokens Collection (Requirement 8)
+    match /device_tokens/{tokenId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create, update: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
