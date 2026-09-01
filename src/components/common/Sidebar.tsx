@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   LayoutDashboard,
   Car,
@@ -126,7 +126,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       id: 'settings',
       label: 'Settings',
       icon: Settings
-    }
+    },
+    ...(activeRole === 'Owner' || activeRole === 'Fleet Manager' ? [{
+      id: 'admin',
+      label: 'Admin Console',
+      icon: Shield,
+      badge: 'Superadmin',
+      badgeType: 'neutral' as const
+    }] : [])
   ];
 
   const handleNavClick = (id: string) => {

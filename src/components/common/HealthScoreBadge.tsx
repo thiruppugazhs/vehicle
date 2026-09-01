@@ -13,16 +13,20 @@ export const HealthScoreBadge: React.FC<HealthScoreBadgeProps> = ({
 }) => {
   let colorClass = 'text-emerald-700 bg-emerald-50 border-emerald-200';
   let barColor = 'bg-emerald-500';
-  let text = 'Good condition';
+  let text = 'Excellent';
 
-  if (score < 60) {
+  if (score < 50) {
     colorClass = 'text-rose-700 bg-rose-50 border-rose-200';
     barColor = 'bg-rose-500';
-    text = 'Critical issues';
-  } else if (score < 80) {
+    text = 'Critical';
+  } else if (score < 70) {
     colorClass = 'text-amber-800 bg-amber-50 border-amber-300';
     barColor = 'bg-amber-500';
-    text = 'Attention needed';
+    text = 'Needs Attention';
+  } else if (score < 90) {
+    colorClass = 'text-teal-700 bg-teal-50 border-teal-200';
+    barColor = 'bg-teal-500';
+    text = 'Good';
   }
 
   if (size === 'hero') {

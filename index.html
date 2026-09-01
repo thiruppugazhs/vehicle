@@ -6,9 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FleetPulse - Vehicle & Fleet Maintenance Management Platform</title>
     <meta name="description" content="Digital vehicle maintenance command center for individual owners, small businesses, and fleet operators." />
+    
+    <!-- PWA Manifest & App Icons (Requirement 63) -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#f59e0b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="FleetPulse" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
   </head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-amber-100 selection:text-amber-900">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(
+            reg => console.log('FleetPulse PWA ServiceWorker active:', reg.scope),
+            err => console.log('FleetPulse PWA ServiceWorker registration failed:', err)
+          );
+        });
+      }
+    </script>
   </body>
 </html>

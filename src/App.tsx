@@ -21,16 +21,21 @@ import { ReportsView } from './components/reports/ReportsView';
 import { NotificationsView } from './components/notifications/NotificationsView';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuditLogsView } from './components/audit/AuditLogsView';
+import { AdminPanelView } from './components/admin/AdminPanelView';
 import { AddEditVehicleModal } from './components/vehicles/AddEditVehicleModal';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
+import { UpdateOdometerModal } from './components/common/UpdateOdometerModal';
 
 const AppContent: React.FC = () => {
   const {
     activeTab,
     isOnboardingActive,
     isAddVehicleOpen,
-    setIsAddVehicleOpen
+    setIsAddVehicleOpen,
+    isUpdateOdometerOpen,
+    setIsUpdateOdometerOpen,
+    presetVehicleId
   } = useFleet();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -85,6 +90,7 @@ const AppContent: React.FC = () => {
           {activeTab === 'notifications' && <NotificationsView />}
           {activeTab === 'audit' && <AuditLogsView />}
           {activeTab === 'settings' && <SettingsView />}
+          {activeTab === 'admin' && <AdminPanelView />}
         </main>
       </div>
 
@@ -96,6 +102,11 @@ const AppContent: React.FC = () => {
       />
       <GlobalSearchModal />
       <NotificationPreferencesModal />
+      <UpdateOdometerModal
+        isOpen={isUpdateOdometerOpen}
+        onClose={() => setIsUpdateOdometerOpen(false)}
+        presetVehicleId={presetVehicleId}
+      />
     </div>
   );
 };

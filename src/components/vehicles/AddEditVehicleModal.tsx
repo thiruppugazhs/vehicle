@@ -16,6 +16,7 @@ import {
 import { Modal } from '../common/Modal';
 import { useFleet } from '../../context/FleetContext';
 import { Vehicle, VehicleType, FuelType, TransmissionType, VehicleStatus } from '../../types';
+import { validateRegPlate, isValidVIN, isDuplicateRegPlate } from '../../utils/validationHelpers';
 
 interface AddEditVehicleModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
   onClose,
   vehicleToEdit
 }) => {
-  const { addVehicle, updateVehicle, addDocument, drivers } = useFleet();
+  const { addVehicle, updateVehicle, addDocument, drivers, vehicles, organization } = useFleet();
 
   // Basic Information
   const [regNumber, setRegNumber] = useState('');
@@ -117,6 +118,33 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!regNumber.trim() || !name.trim()) return;
+
+    // Requirement 69: Validation rules
+    const plateCheck = validateRegPlate(regNumber);
+    if (!plateCheck.valid) {
+      alert(plateCheck.error);
+      return;
+    }
+
+    if (isDuplicateRegPlate(regNumber, organization.id, vehicles, vehicleToEdit?.id)) {
+      alert(`Registration plate "${regNumber.toUpperCase()}" already exists in organization "${organization.name}".`);
+      return;
+    }
+
+    if (vin && vin.trim() && !isValidVIN(vin)) {
+      alert('Chassis VIN must be a valid 17-character alphanumeric string (excluding letters I, O, Q).');
+      return;
+    }
+
+    if (Number(odometer) < 0) {
+      alert('Odometer cannot be negative.');
+      return;
+    }
+
+    if (Number(purchasePrice) < 0) {
+      alert('Purchase price cannot be negative.');
+      return;
+    }
 
     if (vehicleToEdit) {
       updateVehicle(vehicleToEdit.id, {

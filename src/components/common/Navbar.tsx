@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   Bell,
@@ -19,7 +19,9 @@ import {
   Shield,
   User,
   Layers,
-  History
+  History,
+  FileText,
+  Gauge
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { HelpGuideModal } from './HelpGuideModal';
@@ -46,6 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     setIsAddServiceOpen,
     setIsReportIssueOpen,
     setIsAddExpenseOpen,
+    setIsUpdateOdometerOpen,
     userProfile,
     updateUserProfile,
     resetToDemoData,
@@ -280,6 +283,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 >
                   <Receipt className="w-4 h-4 text-emerald-600" />
                   <span>Log Fuel / Expense</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsQuickActionOpen(false);
+                    setActiveTab('documents');
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <FileText className="w-4 h-4 text-amber-600" />
+                  <span>Upload Document</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsQuickActionOpen(false);
+                    setIsUpdateOdometerOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <Gauge className="w-4 h-4 text-purple-600" />
+                  <span>Update Odometer</span>
                 </button>
               </div>
             )}

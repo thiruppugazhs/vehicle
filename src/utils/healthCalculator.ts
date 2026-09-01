@@ -1,8 +1,10 @@
 import { Vehicle, RepairTicket, SmartReminder, VehicleDocument } from '../types';
 
+export type HealthTier = 'Excellent' | 'Good' | 'Needs Attention' | 'Critical';
+
 export interface HealthEvaluation {
   score: number;
-  grade: 'Good' | 'Attention Needed' | 'Critical';
+  grade: HealthTier;
   summary: string;
   penalties: string[];
 }
@@ -78,15 +80,19 @@ export const computeVehicleHealthScore = (
   // Clamp score
   const finalScore = Math.max(15, Math.min(100, Math.round(score)));
 
-  let grade: 'Good' | 'Attention Needed' | 'Critical' = 'Good';
-  let summary = 'Vehicle is in good condition.';
+  // Requirement 71: Exact 4 tiers: 90-100 Excellent, 70-89 Good, 50-69 Needs Attention, Below 50 Critical
+  let grade: HealthTier = 'Excellent';
+  let summary = 'Vehicle is in prime mechanical and compliance condition.';
 
-  if (finalScore < 60) {
+  if (finalScore < 50) {
     grade = 'Critical';
-    summary = 'Vehicle requires immediate operational attention and repairs.';
-  } else if (finalScore < 80) {
-    grade = 'Attention Needed';
-    summary = 'Vehicle maintenance or inspection required soon.';
+    summary = 'Vehicle requires immediate operational shutdown or urgent maintenance.';
+  } else if (finalScore < 70) {
+    grade = 'Needs Attention';
+    summary = 'Scheduled services or unresolved moderate issues require timely attention.';
+  } else if (finalScore < 90) {
+    grade = 'Good';
+    summary = 'Vehicle is operating reliably with minor routine service approaching.';
   }
 
   return {
@@ -95,4 +101,13 @@ export const computeVehicleHealthScore = (
     summary,
     penalties
   };
+};
+
+export const calculateVehicleHealthScore = (
+  vehicle: Vehicle,
+  repairs: RepairTicket[] = [],
+  reminders: SmartReminder[] = [],
+  documents: VehicleDocument[] = []
+): number => {
+  return computeVehicleHealthScore(vehicle, repairs, reminders, documents).score;
 };

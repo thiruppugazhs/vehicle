@@ -47,6 +47,7 @@ export const VehicleDetailsView: React.FC = () => {
     setIsAddServiceOpen,
     setIsReportIssueOpen,
     setIsAddExpenseOpen,
+    setIsUpdateOdometerOpen,
     userProfile
   } = useFleet();
 
@@ -200,10 +201,18 @@ export const VehicleDetailsView: React.FC = () => {
 
             <button
               onClick={() => setIsAddExpenseOpen(true, vehicle.id)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
             >
               <Receipt className="w-3.5 h-3.5" />
               Add Expense
+            </button>
+
+            <button
+              onClick={() => setIsUpdateOdometerOpen(true, vehicle.id)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-colors cursor-pointer"
+            >
+              <Gauge className="w-3.5 h-3.5" />
+              Log Odometer
             </button>
           </div>
         </div>
@@ -245,12 +254,21 @@ export const VehicleDetailsView: React.FC = () => {
         <div className="space-y-6">
           {/* Section 15 Overview KPI Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Current Odometer</span>
-              <p className="text-lg font-extrabold text-slate-900 mt-1">
-                {formatDistance(vehicle.currentOdometer, userProfile.distanceUnit)}
-              </p>
-              <span className="text-[10px] text-slate-500">~{vehicle.averageDailyKm || 80} km/day</span>
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Current Odometer</span>
+                <p className="text-lg font-extrabold text-slate-900 mt-1">
+                  {formatDistance(vehicle.currentOdometer, userProfile.distanceUnit)}
+                </p>
+                <span className="text-[10px] text-slate-500">~{vehicle.averageDailyKm || 80} km/day</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsUpdateOdometerOpen(true, vehicle.id)}
+                className="mt-2 text-[11px] text-amber-800 hover:text-amber-900 font-bold flex items-center gap-1 cursor-pointer"
+              >
+                Log Mileage &rarr;
+              </button>
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">

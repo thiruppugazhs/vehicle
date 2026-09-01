@@ -41,6 +41,7 @@ import {
 } from '../data/initialData';
 import { computeVehicleHealthScore } from '../utils/healthCalculator';
 import { getDaysDifference } from '../utils/formatters';
+import { runAutomatedNotificationScan } from '../services/notificationWorker';
 
 interface FleetContextType {
   // Navigation & UI state
@@ -60,6 +61,8 @@ interface FleetContextType {
   setIsReportIssueOpen: (open: boolean, presetVehicleId?: string) => void;
   isAddExpenseOpen: boolean;
   setIsAddExpenseOpen: (open: boolean, presetVehicleId?: string) => void;
+  isUpdateOdometerOpen: boolean;
+  setIsUpdateOdometerOpen: (open: boolean, presetVehicleId?: string) => void;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean, mode?: 'login' | 'signup' | 'forgot' | 'reset') => void;
   authMode: 'login' | 'signup' | 'forgot' | 'reset';
@@ -153,7 +156,7 @@ interface FleetContextType {
   auditLogs: AuditLogEntry[];
   recordAuditLog: (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => void;
   odometerLogs: VehicleOdometerLog[];
-  logOdometer: (vehicleId: string, odo: number, notes?: string) => void;
+  logOdometer: (vehicleId: string, odo: number, notes?: string, isAuthorizedCorrection?: boolean) => boolean;
   smartInsights: SmartInsight[];
   assignedDriverVehicle?: Vehicle;
   assignedTechnicianRepairs: RepairTicket[];
@@ -199,6 +202,7 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isAddServiceOpen, setIsAddServiceOpenState] = useState(false);
   const [isReportIssueOpen, setIsReportIssueOpenState] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpenState] = useState(false);
+  const [isUpdateOdometerOpen, setIsUpdateOdometerOpenState] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isNotificationPreferencesOpen, setIsNotificationPreferencesOpen] = useState(false);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
@@ -222,13 +226,51 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsAddExpenseOpenState(open);
   };
 
+  const setIsUpdateOdometerOpen = (open: boolean, presetId?: string) => {
+    setPresetVehicleId(presetId);
+    setIsUpdateOdometerOpenState(open);
+  };
+
+  // Requirement 74: Frontend Routes Hash Synchronization
   const setActiveTab = (tab: string, vehicleId?: string) => {
     if (vehicleId) {
       setSelectedVehicleId(vehicleId);
+      window.location.hash = `#/${tab}/${vehicleId}`;
+    } else {
+      window.location.hash = `#/${tab}`;
     }
     setActiveTabState(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      if (!hash) return;
+      const parts = hash.split('/');
+      const primary = parts[0];
+      const sub = parts[1];
+
+      if (primary === 'login') {
+        setIsAuthModalOpen(true);
+        setAuthMode('login');
+      } else if (primary === 'signup') {
+        setIsAuthModalOpen(true);
+        setAuthMode('signup');
+      } else if (primary === 'onboarding') {
+        setIsOnboardingActive(true);
+      } else if (primary === 'vehicles' && sub) {
+        setSelectedVehicleId(sub);
+        setActiveTabState('vehicle-details');
+      } else if (['dashboard', 'vehicles', 'maintenance', 'repairs', 'expenses', 'reminders', 'documents', 'drivers', 'service-centers', 'fleet-management', 'analytics', 'reports', 'notifications', 'audit', 'settings', 'admin', 'landing'].includes(primary)) {
+        setActiveTabState(primary);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange();
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Local storage load or defaults
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
@@ -402,6 +444,27 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
   }, [notifications]);
+
+  // Requirement 72: Background Notification Automation Worker
+  useEffect(() => {
+    const runScan = () => {
+      const result = runAutomatedNotificationScan(
+        vehicles,
+        schedules,
+        documents,
+        drivers,
+        repairs,
+        notifications
+      );
+      if (result.newNotifications.length > 0) {
+        setNotifications(prev => [...result.newNotifications, ...prev]);
+      }
+    };
+
+    runScan();
+    const interval = setInterval(runScan, 60000);
+    return () => clearInterval(interval);
+  }, [vehicles, schedules, documents, drivers, repairs, notifications]);
 
   // Recalculate dynamic vehicle health and reminders (Requirement 42: Organization Scoping)
   const enrichedVehicles = useMemo(() => {
@@ -1020,10 +1083,23 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Requirement 45: Odometer Logging
-  const logOdometer = (vehicleId: string, odo: number, notes?: string) => {
+  // Requirement 45 & 79: Global Odometer Logging with Rollback Authorization & Schedule Triggers
+  const logOdometer = (vehicleId: string, odo: number, notes?: string, isAuthorizedCorrection: boolean = false): boolean => {
     const veh = vehicles.find(v => v.id === vehicleId);
-    if (!veh) return;
+    if (!veh) return false;
+
+    // Requirement 79: Prevent decreasing mileage unless an authorized user corrects it
+    if (odo < veh.currentOdometer) {
+      if (activeRole === 'Driver') {
+        showToast('Permission Denied: Drivers cannot log rollback mileage. Contact Fleet Manager.');
+        return false;
+      }
+      if (!isAuthorizedCorrection) {
+        showToast(`Warning: New mileage (${odo.toLocaleString()} km) is lower than current (${veh.currentOdometer.toLocaleString()} km). Authorized correction flag required.`);
+        return false;
+      }
+    }
+
     updateVehicle(vehicleId, { currentOdometer: odo });
     const logEntry: VehicleOdometerLog = {
       id: `odo_${Date.now().toString(36)}`,
@@ -1031,9 +1107,65 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       odometer: odo,
       recordedBy: userProfile.name,
       date: new Date().toISOString().slice(0, 10),
-      notes
+      notes: notes || (odo < veh.currentOdometer ? 'Authorized Rollback Correction' : 'Mileage Update')
     };
     setOdometerLogs(prev => [logEntry, ...prev]);
+
+    // Check mileage-based service schedules (Requirement 79)
+    const vehSchedules = schedules.filter(s => s.vehicleId === vehicleId && s.nextDueOdometer);
+    for (const sch of vehSchedules) {
+      if (sch.nextDueOdometer && odo >= sch.nextDueOdometer) {
+        const notif: NotificationItem = {
+          id: `notif_${Date.now()}_${sch.id}`,
+          title: 'Service Overdue by Mileage',
+          message: `${veh.registrationNumber} reached ${odo.toLocaleString()} km, exceeding threshold for ${sch.name} (${sch.nextDueOdometer.toLocaleString()} km).`,
+          type: 'urgent',
+          notificationType: 'service_overdue',
+          timestamp: 'Just now',
+          isRead: false,
+          linkTo: { tab: 'maintenance', vehicleId: veh.id }
+        };
+        setNotifications(prev => [notif, ...prev]);
+
+        // Escalate or add critical reminder
+        setSmartReminders(prev => {
+          const exists = prev.find(r => r.vehicleId === vehicleId && r.category === sch.serviceCategory && r.status === 'Pending');
+          if (exists) {
+            return prev.map(r => r.id === exists.id ? { ...r, priority: 'Critical', dueOdometer: sch.nextDueOdometer } : r);
+          }
+          return [
+            {
+              id: `rem_${Date.now()}`,
+              vehicleId,
+              vehicleReg: veh.registrationNumber,
+              vehicleName: veh.name,
+              title: `${sch.name} Overdue`,
+              category: sch.serviceCategory,
+              dueDate: sch.nextDueDate || new Date().toISOString().slice(0, 10),
+              dueOdometer: sch.nextDueOdometer,
+              remainingDays: sch.nextDueDate ? getDaysDifference(sch.nextDueDate) : 0,
+              priority: 'Critical',
+              status: 'Pending',
+              description: `Mileage threshold reached (${odo.toLocaleString()} km / ${sch.nextDueOdometer.toLocaleString()} km)`
+            },
+            ...prev
+          ];
+        });
+      } else if (sch.nextDueOdometer && sch.nextDueOdometer - odo <= 1000) {
+        const notif: NotificationItem = {
+          id: `notif_${Date.now()}_${sch.id}`,
+          title: 'Upcoming Service Mileage Threshold',
+          message: `${veh.registrationNumber} is within ${(sch.nextDueOdometer - odo).toLocaleString()} km of scheduled service: ${sch.name}.`,
+          type: 'warning',
+          notificationType: 'service_due',
+          timestamp: 'Just now',
+          isRead: false,
+          linkTo: { tab: 'maintenance', vehicleId: veh.id }
+        };
+        setNotifications(prev => [notif, ...prev]);
+      }
+    }
+
     recordAuditLog({
       actorName: userProfile.name,
       actorRole: activeRole,
@@ -1043,7 +1175,8 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       entityName: veh.registrationNumber,
       description: `Odometer logged at ${odo.toLocaleString()} km${notes ? ` (${notes})` : ''}`
     });
-    showToast(`Odometer updated for ${veh.registrationNumber}`);
+    showToast(`Odometer updated for ${veh.registrationNumber} (${odo.toLocaleString()} km)`);
+    return true;
   };
 
   const assignedDriverVehicle = useMemo(() => {
@@ -1227,6 +1360,8 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsReportIssueOpen,
         isAddExpenseOpen,
         setIsAddExpenseOpen,
+        isUpdateOdometerOpen,
+        setIsUpdateOdometerOpen,
         isAuthModalOpen,
         setIsAuthModalOpen,
         authMode,

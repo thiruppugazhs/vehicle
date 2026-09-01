@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   ChevronRight,
   TrendingDown,
-  Sparkles
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { StatCard } from '../common/StatCard';
@@ -29,18 +30,21 @@ export const DashboardView: React.FC = () => {
     repairs,
     expenses,
     activities,
+    documents,
     userProfile,
     activeRole,
     switchRole,
     smartInsights,
     assignedDriverVehicle,
     assignedTechnicianRepairs,
+    totalFleetDowntimeHours,
     logOdometer,
     setActiveTab,
     setIsAddServiceOpen,
     setIsReportIssueOpen,
     setIsAddVehicleOpen,
-    setIsAddExpenseOpen
+    setIsAddExpenseOpen,
+    setIsUpdateOdometerOpen
   } = useFleet();
 
   // Metrics computation
@@ -101,17 +105,78 @@ export const DashboardView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => setIsAddVehicleOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
           >
             <Car className="w-3.5 h-3.5 text-slate-600" />
             Add Vehicle
           </button>
           <button
             onClick={() => setIsAddServiceOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 shadow-2xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 shadow-2xs transition-colors cursor-pointer"
           >
             <Wrench className="w-3.5 h-3.5" />
             Schedule Service
+          </button>
+        </div>
+      </div>
+
+      {/* Requirement 78: 6 Universal Quick Actions */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            Fleet Operations Quick Actions
+          </span>
+          <span className="text-[11px] text-slate-400">Direct shortcuts for fleet maintenance workflows</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsAddVehicleOpen(true)}
+            className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group text-center"
+          >
+            <Car className="w-4 h-4 text-slate-600 group-hover:text-amber-800 mb-1" />
+            <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Add Vehicle</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsAddServiceOpen(true)}
+            className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group text-center"
+          >
+            <Wrench className="w-4 h-4 text-slate-600 group-hover:text-amber-800 mb-1" />
+            <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Record Service</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsReportIssueOpen(true)}
+            className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group text-center"
+          >
+            <AlertTriangle className="w-4 h-4 text-slate-600 group-hover:text-amber-800 mb-1" />
+            <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Report Repair</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsAddExpenseOpen(true)}
+            className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group text-center"
+          >
+            <Receipt className="w-4 h-4 text-slate-600 group-hover:text-amber-800 mb-1" />
+            <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Add Expense</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('documents')}
+            className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group text-center"
+          >
+            <FileText className="w-4 h-4 text-slate-600 group-hover:text-amber-800 mb-1" />
+            <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Upload Document</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsUpdateOdometerOpen(true)}
+            className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group text-center"
+          >
+            <Gauge className="w-4 h-4 text-slate-600 group-hover:text-amber-800 mb-1" />
+            <span className="text-xs font-bold text-slate-800 group-hover:text-amber-900">Update Odometer</span>
           </button>
         </div>
       </div>
@@ -172,12 +237,7 @@ export const DashboardView: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  const newOdo = prompt(`Enter updated odometer for ${assignedDriverVehicle.registrationNumber}:`, String(assignedDriverVehicle.currentOdometer + 150));
-                  if (newOdo && !isNaN(Number(newOdo))) {
-                    logOdometer(assignedDriverVehicle.id, Number(newOdo), 'Driver shift update');
-                  }
-                }}
+                onClick={() => setIsUpdateOdometerOpen(true, assignedDriverVehicle.id)}
                 className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
               >
                 Update Odometer
