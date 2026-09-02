@@ -1,7 +1,7 @@
 {
-  "id": "io.fleetpulse.pwa",
-  "name": "FleetPulse - Vehicle & Fleet Maintenance Platform",
-  "short_name": "FleetPulse",
+  "id": "io.serviq.pwa",
+  "name": "SERVIQ - Vehicle & Fleet Maintenance Platform",
+  "short_name": "SERVIQ",
   "description": "Digital vehicle maintenance command center for fleet operators, small businesses, and individual vehicle owners.",
   "start_url": "/",
   "scope": "/",

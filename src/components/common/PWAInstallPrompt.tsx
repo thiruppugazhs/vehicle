@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, X, Smartphone, Share2, PlusSquare } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -94,7 +94,7 @@ export const PWAInstallPrompt: React.FC = () => {
           </div>
           <div className="flex-1 pr-6">
             <h4 className="text-sm font-bold text-slate-900 leading-snug">
-              Install FleetPulse Mobile App
+              Install SERVIQ Mobile App
             </h4>
             <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
               Faster 1-tap launch, offline support, and dedicated mobile driver interface.
