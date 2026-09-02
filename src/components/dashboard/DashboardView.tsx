@@ -22,6 +22,7 @@ import { StatCard } from '../common/StatCard';
 import { StatusBadge } from '../common/StatusBadge';
 import { HealthScoreBadge } from '../common/HealthScoreBadge';
 import { formatCurrency, formatDistance, formatDate } from '../../utils/formatters';
+import { DriverHomeView } from '../driver/DriverHomeView';
 
 export const DashboardView: React.FC = () => {
   const {
@@ -82,7 +83,9 @@ export const DashboardView: React.FC = () => {
   // Upcoming maintenance reminders
   const upcomingReminders = smartReminders
     .filter(r => r.status === 'Pending' && r.priority !== 'Critical' && r.remainingDays >= 0)
-    .slice(0, 5);
+  if (activeRole === 'Driver') {
+    return <DriverHomeView />;
+  }
 
   return (
     <div className="space-y-6 text-left">
@@ -210,53 +213,7 @@ export const DashboardView: React.FC = () => {
         </div>
       )}
 
-      {/* Requirement 41: Role-Specific Perspectives */}
-      {activeRole === 'Driver' && assignedDriverVehicle && (
-        <div className="bg-purple-50 border border-purple-200 p-5 rounded-2xl shadow-2xs text-left">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-purple-600 text-white rounded-xl">
-                <Car className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
-                  Driver Portal Active
-                </span>
-                <h3 className="text-base font-bold text-slate-900 mt-0.5">
-                  Assigned Vehicle: {assignedDriverVehicle.name} ({assignedDriverVehicle.registrationNumber})
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Current Odometer: <strong>{assignedDriverVehicle.currentOdometer.toLocaleString()} km</strong> • Health Score: <strong>{assignedDriverVehicle.healthScore}/100</strong>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsUpdateOdometerOpen(true, assignedDriverVehicle.id)}
-                className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
-              >
-                Update Odometer
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsReportIssueOpen(true, assignedDriverVehicle.id)}
-                className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs rounded-xl shadow-2xs cursor-pointer"
-              >
-                Report Vehicle Issue
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('maintenance')}
-                className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs rounded-xl shadow-2xs cursor-pointer"
-              >
-                View Service Schedule
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Technician Perspective */}
 
       {activeRole === 'Technician' && (
         <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-2xs text-left">

@@ -165,7 +165,8 @@ export const MaintenanceView: React.FC = () => {
             />
           ) : (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
                   <tr>
@@ -199,24 +200,31 @@ export const MaintenanceView: React.FC = () => {
                           </td>
 
                           <td className="py-3.5 px-4">
-                            <span className="font-bold text-slate-900 block">{rec.title}</span>
-                            <span className="text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.2 rounded-sm inline-block mt-0.5">
-                              {rec.serviceType}
-                            </span>
-                            {rec.partsReplaced.length > 0 && (
-                              <p className="text-[10px] text-slate-400 mt-1 truncate max-w-xs">
-                                Parts: {rec.partsReplaced.join(', ')}
-                              </p>
+                            <div className="font-bold text-slate-900">{rec.title}</div>
+                            <div className="text-[11px] text-slate-500">{rec.serviceType}</div>
+                            {rec.partsReplaced && rec.partsReplaced.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {rec.partsReplaced.map((part, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px]"
+                                  >
+                                    {part}
+                                  </span>
+                                ))}
+                              </div>
                             )}
                           </td>
 
-                          <td className="py-3.5 px-4 text-slate-700">
-                            <div className="font-semibold">{rec.serviceCenterName}</div>
-                            <div className="text-[10px] text-slate-400">{rec.technicianName || 'Certified Workshop'}</div>
+                          <td className="py-3.5 px-4">
+                            <div className="text-slate-800 font-semibold">{rec.serviceCenterName}</div>
+                            {rec.technicianName && (
+                              <div className="text-[10px] text-slate-400">Tech: {rec.technicianName}</div>
+                            )}
                           </td>
 
                           <td className="py-3.5 px-4">
-                            <div className="text-slate-900 font-bold">{formatDate(rec.serviceDate)}</div>
+                            <div className="text-slate-900 font-semibold">{formatDate(rec.serviceDate)}</div>
                             <div className="text-[10px] text-slate-500 font-mono">
                               {formatDistance(rec.odometer, userProfile.distanceUnit)}
                             </div>
@@ -275,6 +283,84 @@ export const MaintenanceView: React.FC = () => {
                     })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card List View (<768px) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {filteredRecords.map(rec => {
+                const veh = vehicles.find(v => v.id === rec.vehicleId);
+                return (
+                  <div key={rec.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <span className="font-mono font-bold text-[11px] text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                          {veh ? veh.registrationNumber : 'Unknown'}
+                        </span>
+                        <h4 className="font-bold text-slate-900 text-sm">{rec.title}</h4>
+                        <p className="text-[11px] text-slate-500">{rec.serviceType}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="font-extrabold text-sm text-slate-900 block">
+                          {formatCurrency(rec.totalCost, userProfile.currency)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          {formatDate(rec.serviceDate)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
+                      <div className="truncate pr-2">
+                        <span className="text-[10px] text-slate-400 block uppercase font-bold">Workshop</span>
+                        <span className="font-medium text-slate-800 text-[11px] truncate block">{rec.serviceCenterName}</span>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] text-slate-400 block uppercase font-bold">Odometer</span>
+                        <span className="font-mono font-semibold text-slate-800 text-[11px]">
+                          {formatDistance(rec.odometer, userProfile.distanceUnit)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {rec.invoiceFileName ? (
+                        <button
+                          onClick={() => setSelectedInvoice(rec.invoiceFileName || null)}
+                          className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-bold"
+                        >
+                          <FileCheck className="w-3.5 h-3.5" />
+                          <span>View Invoice</span>
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 italic">No invoice</span>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setRecordToEdit(rec);
+                            setIsAddServiceOpen(true);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete service record for "${rec.title}"?`)) {
+                              deleteMaintenanceRecord(rec.id);
+                            }
+                          }}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                          title="Delete Record"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           )}

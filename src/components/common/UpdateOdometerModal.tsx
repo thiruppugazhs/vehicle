@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gauge, AlertTriangle, CheckCircle2, History, ShieldAlert } from 'lucide-react';
 import { Modal } from './Modal';
 import { useFleet } from '../../context/FleetContext';
 import { formatDistance } from '../../utils/formatters';
+import { enqueueOfflineAction } from '../../utils/offlineQueue';
 
 interface UpdateOdometerModalProps {
   isOpen: boolean;
@@ -78,6 +79,17 @@ export const UpdateOdometerModal: React.FC<UpdateOdometerModalProps> = ({
         setErrorMessage('Mileage rollback detected. You must check "Authorize Meter Correction / Rollback" to proceed.');
         return;
       }
+    }
+
+    if (!navigator.onLine) {
+      enqueueOfflineAction({
+        type: 'ODOMETER',
+        payload: {
+          vehicleId: selectedVehId,
+          newOdometer: numOdo,
+          notes
+        }
+      });
     }
 
     const success = logOdometer(selectedVehId, numOdo, notes, isRollbackAuthorized);

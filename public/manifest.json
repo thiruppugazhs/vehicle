@@ -1,9 +1,12 @@
-﻿{
+{
+  "id": "io.fleetpulse.pwa",
   "name": "FleetPulse - Vehicle & Fleet Maintenance Platform",
   "short_name": "FleetPulse",
   "description": "Digital vehicle maintenance command center for fleet operators, small businesses, and individual vehicle owners.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "background_color": "#f8fafc",
   "theme_color": "#f59e0b",
@@ -13,6 +16,29 @@
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Report Vehicle Issue",
+      "short_name": "Report Issue",
+      "description": "Quickly report a vehicle breakdown or mechanical issue",
+      "url": "/?action=report_issue",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Update Odometer",
+      "short_name": "Log Odo",
+      "description": "Record latest vehicle odometer reading",
+      "url": "/?action=update_odometer",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Vehicles",
+      "short_name": "Vehicles",
+      "description": "View assigned vehicles and maintenance status",
+      "url": "/?tab=vehicles",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
     }
   ],
   "categories": ["business", "productivity", "utilities"]

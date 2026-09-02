@@ -125,10 +125,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Global Search Input */}
+          {/* Mobile Search Icon Button */}
+          <button
+            onClick={() => setIsGlobalSearchOpen(true)}
+            className="sm:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 transition-colors cursor-pointer"
+            aria-label="Search fleet"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
+          {/* Desktop & Tablet Search Input */}
           <div
             onClick={() => setIsGlobalSearchOpen(true)}
-            className="relative w-full max-w-xs sm:max-w-sm cursor-pointer"
+            className="relative hidden sm:block w-full max-w-xs sm:max-w-sm cursor-pointer"
           >
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input

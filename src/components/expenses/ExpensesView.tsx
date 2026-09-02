@@ -388,7 +388,7 @@ export const ExpensesView: React.FC = () => {
         />
       ) : (
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -477,6 +477,83 @@ export const ExpensesView: React.FC = () => {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card List View (<768px) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {filteredExpenses.map(item => {
+            const veh = vehicles.find(v => v.id === item.vehicleId);
+            return (
+              <div key={item.id} className="p-4 space-y-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono font-bold text-[11px] text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                      {veh ? veh.registrationNumber : 'Unassigned'}
+                    </span>
+                    <h4 className="font-bold text-slate-900 text-sm mt-1">{item.description || item.category}</h4>
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold mt-1"
+                      style={{
+                        backgroundColor: `${CATEGORY_COLORS[item.category] || '#64748B'}15`,
+                        color: CATEGORY_COLORS[item.category] || '#64748B'
+                      }}
+                    >
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-extrabold text-sm text-slate-900 block">
+                      {formatCurrency(item.amount, userProfile.currency)}
+                    </span>
+                    <span className="text-[10px] text-slate-400 block">
+                      {formatDate(item.date)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Vendor / Pay Method</span>
+                    <span className="font-medium text-slate-800 text-[11px]">{item.vendor || 'N/A'} • {item.paymentMethod}</span>
+                  </div>
+                  {item.odometer && (
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Odometer</span>
+                      <span className="font-mono font-semibold text-slate-800 text-[11px]">
+                        {item.odometer.toLocaleString()} km
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  {item.invoiceFileName ? (
+                    <button
+                      onClick={() => alert(`Previewing invoice: ${item.invoiceFileName}`)}
+                      className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-bold"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>View Invoice</span>
+                    </button>
+                  ) : (
+                    <span className="text-[11px] text-slate-400 italic">No receipt attached</span>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      if (confirm('Delete this expense record?')) {
+                        deleteExpenseRecord(item.id);
+                      }
+                    }}
+                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                    title="Delete Record"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
       )}

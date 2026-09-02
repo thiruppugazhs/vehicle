@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'fleetpulse-v1';
+const CACHE_NAME = 'fleetpulse-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -28,27 +28,45 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+
+  // Allow Supabase API, WebSocket and Auth calls to bypass SW caching
+  if (url.hostname.includes('supabase.co')) {
+    return;
+  }
+
+  // Navigation requests: Network First, fallback to cached /index.html (App Shell)
+  if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put('/index.html', responseToCache);
+          });
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Static Assets (JS, CSS, images, SVGs): Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return (
-        cachedResponse ||
-        fetch(event.request)
-          .then((response) => {
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
             });
-            return response;
-          })
-          .catch(() => {
-            if (event.request.headers.get('accept')?.includes('text/html')) {
-              return caches.match('/index.html');
-            }
-          })
-      );
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

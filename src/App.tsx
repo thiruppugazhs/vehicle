@@ -26,6 +26,10 @@ import { AddEditVehicleModal } from './components/vehicles/AddEditVehicleModal';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { NotificationPreferencesModal } from './components/notifications/NotificationPreferencesModal';
 import { UpdateOdometerModal } from './components/common/UpdateOdometerModal';
+import { ReportIssueModal } from './components/repairs/ReportIssueModal';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
+import { OfflineBanner } from './components/common/OfflineBanner';
+import { PWAInstallPrompt } from './components/common/PWAInstallPrompt';
 
 const AppContent: React.FC = () => {
   const {
@@ -35,6 +39,8 @@ const AppContent: React.FC = () => {
     setIsAddVehicleOpen,
     isUpdateOdometerOpen,
     setIsUpdateOdometerOpen,
+    isReportIssueOpen,
+    setIsReportIssueOpen,
     presetVehicleId
   } = useFleet();
 
@@ -63,7 +69,10 @@ const AppContent: React.FC = () => {
   // Primary Application Workspace with light theme
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-amber-100 selection:text-amber-900">
-      {/* Sidebar Navigation */}
+      {/* Offline Status & Sync Banner */}
+      <OfflineBanner />
+
+      {/* Sidebar Navigation (Desktop) */}
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -73,7 +82,7 @@ const AppContent: React.FC = () => {
       <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
         <Navbar onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-8">
           {activeTab === 'dashboard' && <DashboardView />}
           {activeTab === 'vehicles' && <VehiclesView />}
           {activeTab === 'vehicle-details' && <VehicleDetailsView />}
@@ -94,6 +103,15 @@ const AppContent: React.FC = () => {
         </main>
       </div>
 
+      {/* Mobile Bottom Navigation Bar (<1024px) */}
+      <MobileBottomNav
+        onOpenReportIssue={() => setIsReportIssueOpen(true)}
+        onOpenUpdateOdometer={() => setIsUpdateOdometerOpen(true)}
+      />
+
+      {/* PWA Install Prompt (Mobile/Tablet/Desktop standalone prompt) */}
+      <PWAInstallPrompt />
+
       {/* Global Modals */}
       <AuthModal />
       <AddEditVehicleModal
@@ -105,6 +123,11 @@ const AppContent: React.FC = () => {
       <UpdateOdometerModal
         isOpen={isUpdateOdometerOpen}
         onClose={() => setIsUpdateOdometerOpen(false)}
+        presetVehicleId={presetVehicleId}
+      />
+      <ReportIssueModal
+        isOpen={isReportIssueOpen}
+        onClose={() => setIsReportIssueOpen(false)}
         presetVehicleId={presetVehicleId}
       />
     </div>
