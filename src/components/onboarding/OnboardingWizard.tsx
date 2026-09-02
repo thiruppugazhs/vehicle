@@ -122,10 +122,10 @@ export const OnboardingWizard: React.FC = () => {
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md mb-3">
             <Layers className="w-6 h-6 stroke-[2.5]" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Welcome to FleetPulse
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-display">
+            Welcome to SERVIQ
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-500 mt-1 font-sans">
             Let's configure your vehicle command center in less than 2 minutes.
           </p>
         </div>

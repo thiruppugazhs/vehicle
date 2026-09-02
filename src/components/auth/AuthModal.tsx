@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Phone, KeyRound, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Phone, KeyRound, RotateCcw, Layers } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useFleet } from '../../context/FleetContext';
 import { signInWithGoogle, sendEmailOtp, verifyEmailOtp, sendPhoneOtp, verifyPhoneOtp } from '../../services/supabase';
@@ -280,12 +280,12 @@ export const AuthModal: React.FC = () => {
       }}
       title={
         authMode === 'signup'
-          ? 'Create your FleetPulse Account'
+          ? 'Create your SERVIQ Account'
           : authMode === 'forgot'
           ? 'Reset Your Password'
           : authMode === 'reset'
           ? 'Set New Password'
-          : 'Welcome Back to FleetPulse'
+          : 'Welcome Back to SERVIQ'
       }
       subtitle={
         authMode === 'signup'
@@ -293,12 +293,25 @@ export const AuthModal: React.FC = () => {
           : authMode === 'forgot'
           ? 'Enter your registered email to receive password reset instructions.'
           : authMode === 'reset'
-          ? 'Choose a strong new password for your FleetPulse account.'
-          : 'Choose Email, Mobile SMS OTP, or Google to access your fleet command center.'
+          ? 'Choose a strong new password for your SERVIQ account.'
+          : 'Sign in to access your vehicle and fleet management dashboard.'
       }
       maxWidth="md"
     >
-      <div className="space-y-4">
+      <div className="space-y-4 text-left">
+        {/* SERVIQ Brand Banner inside modal */}
+        <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs shrink-0">
+            <Layers className="w-5 h-5 stroke-[2.5]" />
+          </div>
+          <div>
+            <span className="font-extrabold text-base tracking-tight text-slate-900 font-display block leading-tight">
+              SERVIQ<span className="text-amber-500">.</span>
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">Vehicle & Fleet Intelligence Platform</span>
+          </div>
+        </div>
+
         {/* Google OAuth Option */}
         {authMode !== 'forgot' && authMode !== 'reset' && !isOtpSent && (
           <>
@@ -306,9 +319,9 @@ export const AuthModal: React.FC = () => {
               type="button"
               onClick={handleGoogleOAuth}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm shadow-2xs hover:border-slate-300 transition-all cursor-pointer"
+              className="w-full h-11 flex items-center justify-center gap-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm shadow-2xs hover:border-slate-300 transition-all cursor-pointer"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
@@ -329,15 +342,17 @@ export const AuthModal: React.FC = () => {
               <span>Continue with Google</span>
             </button>
 
-            <div className="relative flex items-center justify-center my-2">
-              <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-xs text-slate-400 font-medium uppercase tracking-wider absolute">
-                Or choose sign in method
+            {/* Clean Flex Divider */}
+            <div className="flex items-center gap-3 my-3">
+              <div className="flex-1 border-t border-slate-200" />
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                or use email / phone
               </span>
+              <div className="flex-1 border-t border-slate-200" />
             </div>
 
             {/* Choose Channel Toggle: Email vs Mobile Phone */}
-            <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl">
+            <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl gap-1">
               <button
                 type="button"
                 onClick={() => {
@@ -345,13 +360,13 @@ export const AuthModal: React.FC = () => {
                   setIsOtpSent(false);
                   setErrorMessage('');
                 }}
-                className={`flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   authChannel === 'email'
                     ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-3.5 h-3.5 shrink-0" />
                 <span>Email Address</span>
               </button>
               <button
@@ -361,14 +376,14 @@ export const AuthModal: React.FC = () => {
                   setIsOtpSent(false);
                   setErrorMessage('');
                 }}
-                className={`flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   authChannel === 'phone'
                     ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Mobile Phone (SMS)</span>
+                <Phone className="w-3.5 h-3.5 shrink-0" />
+                <span>Mobile SMS OTP</span>
               </button>
             </div>
           </>
@@ -400,7 +415,7 @@ export const AuthModal: React.FC = () => {
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
                   placeholder="e.g. Vikram Malhotra"
-                  className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                  className="w-full h-11 pl-10 pr-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-900 font-medium placeholder:text-slate-400"
                   required
                 />
               </div>
@@ -412,26 +427,26 @@ export const AuthModal: React.FC = () => {
             <>
               {!isOtpSent && (
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-700">Email Address</label>
                     {authMode !== 'forgot' && authMode !== 'reset' && (
                       <button
                         type="button"
                         onClick={() => setEmailAuthType(emailAuthType === 'password' ? 'otp' : 'password')}
-                        className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+                        className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer"
                       >
                         {emailAuthType === 'password' ? 'Use OTP Login instead' : 'Use Password instead'}
                       </button>
                     )}
                   </div>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="name@company.com"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      className="w-full h-11 pl-10 pr-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-900 font-medium placeholder:text-slate-400"
                       required
                     />
                   </div>
@@ -458,13 +473,13 @@ export const AuthModal: React.FC = () => {
                     )}
                   </div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="password"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      className="w-full h-11 pl-10 pr-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-900 font-medium placeholder:text-slate-400"
                       required
                     />
                   </div>
@@ -474,15 +489,15 @@ export const AuthModal: React.FC = () => {
               {/* Password Confirmation for Signup */}
               {emailAuthType === 'password' && authMode === 'signup' && !isOtpSent && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Confirm Password</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Confirm Password</label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       type="password"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      className="w-full h-11 pl-10 pr-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-900 font-medium placeholder:text-slate-400"
                       required
                     />
                   </div>
@@ -494,19 +509,19 @@ export const AuthModal: React.FC = () => {
           {/* CHANNEL 2: MOBILE PHONE FLOW */}
           {authChannel === 'phone' && !isOtpSent && (
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Phone Number</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Mobile Phone Number</label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="+91 98401 23456"
-                  className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-medium"
+                  className="w-full h-11 pl-10 pr-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-medium text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-slate-400 mt-1.5">
                 We'll send a 6-digit one-time password (OTP) via SMS to verify your number.
               </p>
             </div>
@@ -610,7 +625,7 @@ export const AuthModal: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-11 mt-2 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             {isLoading ? (
               <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />

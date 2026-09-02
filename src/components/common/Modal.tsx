@@ -53,27 +53,27 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={onClose} 
       />
 
-      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
+      <div className="flex min-h-full items-center justify-center p-3 sm:p-6 text-center my-auto">
         <div 
-          className={`w-full ${maxWidthClass} transform rounded-2xl bg-white p-6 text-left align-middle shadow-2xl transition-all border border-slate-200`}
+          className={`w-full ${maxWidthClass} my-auto max-h-[90vh] flex flex-col transform rounded-3xl bg-white text-left align-middle shadow-2xl transition-all border border-slate-200/90 overflow-hidden`}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-start justify-between pb-4 border-b border-slate-100">
+          <div className="flex items-start justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 bg-white shrink-0">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+              <h3 className="text-lg font-bold text-slate-900 font-display">{title}</h3>
               {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
             </div>
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Body */}
-          <div className="mt-4 max-h-[75vh] overflow-y-auto pr-1">
+          <div className="px-5 sm:px-6 py-5 overflow-y-auto max-h-[calc(90vh-5rem)]">
             {children}
           </div>
         </div>

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { HelpCircle, Shield, Key, Search, Bell, CheckCircle2, BookOpen, Layers } from 'lucide-react';
 import { Modal } from './Modal';
 
@@ -12,7 +12,7 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({ isOpen, onClose 
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="FleetPulse Knowledge Base & Help Guide"
+      title="SERVIQ Knowledge Base & Help Guide"
       subtitle="Operational shortcuts, role-based capabilities, and maintenance guidelines."
       maxWidth="lg"
     >

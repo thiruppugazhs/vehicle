@@ -169,8 +169,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <Layers className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
-                FleetPulse
+              <span className="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5 font-display">
+                SERVIQ
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-sm">
                   PRO
                 </span>

@@ -143,7 +143,7 @@ export const DocumentsView: React.FC = () => {
           <div>
             <h3 className="font-bold text-sm text-slate-900">Automated Expiry Schedule Engine</h3>
             <p className="text-xs text-slate-600">
-              FleetPulse automatically notifies managers at <strong>30 days</strong>, <strong>15 days</strong>, <strong>7 days</strong>, <strong>1 day</strong>, and <strong>On Expiry</strong>.
+              SERVIQ automatically notifies managers at <strong>30 days</strong>, <strong>15 days</strong>, <strong>7 days</strong>, <strong>1 day</strong>, and <strong>On Expiry</strong>.
             </p>
           </div>
         </div>
@@ -554,7 +554,7 @@ export const DocumentsView: React.FC = () => {
                 <p className="text-xs text-slate-500">Issued: {formatDate(previewDoc.issueDate)} • Valid Until: {formatDate(previewDoc.expiryDate)}</p>
               </div>
               <p className="text-xs text-slate-600 italic max-w-md mx-auto">
-                {previewDoc.notes || 'Official compliance document registered on FleetPulse.'}
+                {previewDoc.notes || 'Official compliance document registered on SERVIQ.'}
               </p>
             </div>
 

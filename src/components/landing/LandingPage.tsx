@@ -116,15 +116,15 @@ export const LandingPage: React.FC = () => {
       <header className="sticky top-0 z-40 bg-white/95 border-b border-slate-200 backdrop-blur-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-xs">
               <Layers className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <span className="font-extrabold text-lg tracking-tight text-slate-900">
-              FleetPulse
+            <span className="font-extrabold text-xl tracking-tight text-slate-900 font-display">
+              SERVIQ<span className="text-amber-500">.</span>
             </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 font-sans">
             <a href="#features" className="hover:text-amber-600 transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-amber-600 transition-colors">How It Works</a>
             <a href="#benefits" className="hover:text-amber-600 transition-colors">Benefits</a>
@@ -137,13 +137,13 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsAuthModalOpen(true, 'login')}
-              className="text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-1.5"
+              className="text-sm font-bold text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
             >
               Sign In
             </button>
             <button
               onClick={handleGetStarted}
-              className="inline-flex items-center gap-1 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 px-4 py-1.5 rounded-xl shadow-xs transition-all"
+              className="inline-flex items-center gap-1.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 px-4.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
             >
               Get Started
             </button>
@@ -155,19 +155,19 @@ export const LandingPage: React.FC = () => {
       <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-            Next-Gen Vehicle & Fleet Maintenance Management
+            Next-Gen Vehicle & Fleet Maintenance Intelligence
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-tight sm:leading-tight">
-            Keep Every Vehicle Ready for the Road.
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.08] sm:leading-[1.08] font-display">
+            Keep Every Vehicle Ready for the Road<span className="text-amber-500">.</span>
           </h1>
 
           {/* Subheading */}
-          <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
-            Manage maintenance, repairs, service reminders, documents, and fleet costs from one intelligent platform.
+          <p className="mt-6 text-base sm:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed font-sans">
+            Manage routine servicing, breakdown tickets, digital documents, and operating costs from one intelligent command platform.
           </p>
 
           {/* CTAs */}
@@ -207,7 +207,7 @@ export const LandingPage: React.FC = () => {
                     <span className="w-3 h-3 rounded-full bg-slate-300" />
                     <span className="w-3 h-3 rounded-full bg-slate-300" />
                   </div>
-                  <span className="text-xs font-bold text-slate-700">FleetPulse Command Center — Live Overview</span>
+                  <span className="text-xs font-bold text-slate-700 font-display">SERVIQ Command Center — Live Overview</span>
                 </div>
                 <button
                   onClick={handleGetStarted}
@@ -316,27 +316,27 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* How it works */}
       <section id="how-it-works" className="py-20 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-xs font-bold uppercase tracking-wider text-amber-700 mb-2">
               Simple 4-Step Workflow
             </h2>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
-              How FleetPulse Works
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-display">
+              How SERVIQ Works
             </h3>
-            <p className="mt-4 text-base text-slate-600">
+            <p className="mt-4 text-base text-slate-600 font-sans">
               From day one to 200,000 kilometers, stay ahead of maintenance with effortless automation.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
             {steps.map((item, idx) => (
-              <div key={idx} className="relative bg-slate-50 rounded-2xl p-6 border border-slate-200 text-left">
-                <span className="text-3xl font-extrabold text-amber-500 block mb-3 font-mono">{item.step}</span>
-                <h4 className="text-base font-bold text-slate-900 mb-2">{item.title}</h4>
-                <p className="text-xs text-slate-600 leading-relaxed">{item.description}</p>
+              <div key={idx} className="relative bg-slate-50 rounded-2xl p-6 border border-slate-200 text-left shadow-2xs">
+                <span className="text-3xl font-extrabold text-amber-500 block mb-3 font-display">{item.step}</span>
+                <h4 className="text-base font-bold text-slate-900 mb-2 font-display">{item.title}</h4>
+                <p className="text-xs text-slate-600 leading-relaxed font-sans">{item.description}</p>
               </div>
             ))}
           </div>
@@ -350,8 +350,8 @@ export const LandingPage: React.FC = () => {
             <h2 className="text-xs font-bold uppercase tracking-wider text-amber-700 mb-2">
               Measurable Business ROI
             </h2>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
-              Why Owners & Fleet Managers Rely on Us
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-display">
+              Why Owners & Fleet Managers Rely on SERVIQ
             </h3>
           </div>
 
@@ -362,8 +362,8 @@ export const LandingPage: React.FC = () => {
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-1">{b.title}</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">{b.desc}</p>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1 font-display">{b.title}</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed font-sans">{b.desc}</p>
                 </div>
               </div>
             ))}
@@ -379,10 +379,10 @@ export const LandingPage: React.FC = () => {
               <Smartphone className="w-3.5 h-3.5 text-amber-600" />
               Native Android & iOS Applications
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Download FleetPulse Mobile App
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
+              Download SERVIQ Mobile App
             </h2>
-            <p className="mt-4 text-base text-slate-600">
+            <p className="mt-4 text-base text-slate-600 font-sans">
               Empower your drivers, technicians, and fleet managers on the go with real-time sync, offline logging, camera receipt scanner, and push alerts.
             </p>
           </div>
@@ -402,8 +402,8 @@ export const LandingPage: React.FC = () => {
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Android Package (.apk)</h3>
-                <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+                <h3 className="text-xl font-bold text-slate-900 mb-2 font-display">Android Package (.apk)</h3>
+                <p className="text-xs text-slate-600 mb-6 leading-relaxed font-sans">
                   Direct installable APK for all Android smartphones and rugged fleet tablets. Features camera scanner, offline caching, and real-time FCM push.
                 </p>
 
@@ -414,7 +414,7 @@ export const LandingPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Package: <code className="font-mono text-[11px] bg-slate-200/60 px-1.5 py-0.5 rounded">com.fleetpulse.vehicle_mobile</code></span>
+                    <span>Package: <code className="font-mono text-[11px] bg-slate-200/60 px-1.5 py-0.5 rounded">com.serviq.app</code></span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -425,8 +425,8 @@ export const LandingPage: React.FC = () => {
 
               <div>
                 <a
-                  href="/downloads/fleetpulse-android.apk"
-                  download="fleetpulse-android.apk"
+                  href="/downloads/serviq-android.apk"
+                  download="serviq-android.apk"
                   className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -448,42 +448,42 @@ export const LandingPage: React.FC = () => {
                     </svg>
                   </div>
                   <span className="px-3 py-1 bg-slate-200 text-slate-800 font-bold text-xs rounded-full border border-slate-300">
-                    iOS Package (v2.4.0)
+                    iOS (TestFlight / IPA)
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-2">iOS Package (.ipa)</h3>
-                <p className="text-xs text-slate-600 mb-6 leading-relaxed">
-                  Native iOS client built for iPhone and iPad. Features Cupertino touch controls, APNs background alerts, and camera barcode/invoice scanning.
+                <h3 className="text-xl font-bold text-slate-900 mb-2 font-display">iOS Package (.ipa)</h3>
+                <p className="text-xs text-slate-600 mb-6 leading-relaxed font-sans">
+                  Enterprise distributed build for iPhone & iPad. Seamlessly connects with your fleet workspace with Apple FaceID / TouchID biometric support.
                 </p>
 
                 <div className="space-y-2.5 mb-6 text-xs text-slate-600">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
-                    <span>Requires iOS 14.0 or later (iPhone & iPad)</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Requires iOS 14.0 or later</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
-                    <span>Bundle ID: <code className="font-mono text-[11px] bg-slate-200/60 px-1.5 py-0.5 rounded">com.fleetpulse.vehicleMobile</code></span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Bundle ID: <code className="font-mono text-[11px] bg-slate-200/60 px-1.5 py-0.5 rounded">com.serviq.app</code></span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
-                    <span>Install via Apple Configurator, AltStore, or TestFlight</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Universal build for iPhone & iPad</span>
                   </div>
                 </div>
               </div>
 
               <div>
                 <a
-                  href="/downloads/fleetpulse-ios.ipa"
-                  download="fleetpulse-ios.ipa"
-                  className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 active:bg-black text-white font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer"
+                  href="/downloads/serviq-ios.ipa"
+                  download="serviq-ios.ipa"
+                  className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
-                  Download iOS Package (.ipa)
+                  Download iOS Package
                 </a>
                 <p className="text-center text-[11px] text-slate-400 mt-2">
-                  Includes full mobile configuration & manifest.
+                  Install via Apple Configurator or TestFlight.
                 </p>
               </div>
             </div>
@@ -539,23 +539,25 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
             <div className="col-span-2">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
-                  <Layers className="w-4 h-4 stroke-[2.5]" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                  <Layers className="w-5 h-5 stroke-[2.5]" />
                 </div>
-                <span className="font-bold text-lg text-slate-900">FleetPulse</span>
+                <span className="font-extrabold text-xl text-slate-900 font-display tracking-tight">
+                  SERVIQ<span className="text-amber-500">.</span>
+                </span>
               </div>
-              <p className="text-xs text-slate-500 max-w-sm leading-relaxed mb-4">
+              <p className="text-xs text-slate-500 max-w-sm leading-relaxed mb-4 font-sans">
                 The centralized digital command center for vehicle maintenance schedules, repair tracking, document compliance, and fleet operational intelligence.
               </p>
-              <div className="text-xs text-slate-500 space-y-1">
+              <div className="text-xs text-slate-500 space-y-1 font-sans">
                 <p className="flex items-center gap-2"><PhoneCall className="w-3.5 h-3.5 text-amber-600" /> +91 1800 425 8899</p>
-                <p className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-amber-600" /> support@fleetpulse.io</p>
+                <p className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-amber-600" /> support@serviq.io</p>
               </div>
             </div>
 
             <div>
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Product</h5>
-              <ul className="space-y-2 text-xs text-slate-600">
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 font-display">Product</h5>
+              <ul className="space-y-2 text-xs text-slate-600 font-sans">
                 <li><a href="#features" className="hover:text-amber-600">Features</a></li>
                 <li><a href="#download-app" className="hover:text-amber-600">Mobile Apps</a></li>
                 <li><a href="#pricing" className="hover:text-amber-600">Pricing</a></li>
@@ -563,18 +565,18 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div>
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Download App</h5>
-              <ul className="space-y-2 text-xs text-slate-600">
-                <li><a href="/downloads/fleetpulse-android.apk" download="fleetpulse-android.apk" className="hover:text-emerald-600 font-semibold flex items-center gap-1.5"><Download className="w-3 h-3 text-emerald-600" /> Android APK</a></li>
-                <li><a href="/downloads/fleetpulse-ios.ipa" download="fleetpulse-ios.ipa" className="hover:text-slate-900 font-semibold flex items-center gap-1.5"><Download className="w-3 h-3 text-slate-600" /> iOS Package (.ipa)</a></li>
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 font-display">Download App</h5>
+              <ul className="space-y-2 text-xs text-slate-600 font-sans">
+                <li><a href="/downloads/serviq-android.apk" download="serviq-android.apk" className="hover:text-emerald-600 font-semibold flex items-center gap-1.5"><Download className="w-3 h-3 text-emerald-600" /> Android APK</a></li>
+                <li><a href="/downloads/serviq-ios.ipa" download="serviq-ios.ipa" className="hover:text-slate-900 font-semibold flex items-center gap-1.5"><Download className="w-3 h-3 text-slate-600" /> iOS Package (.ipa)</a></li>
                 <li><a href="#download-app" className="hover:text-amber-600">Install Guide</a></li>
                 <li><a href="#download-app" className="hover:text-amber-600">Release (v2.4.0)</a></li>
               </ul>
             </div>
 
             <div>
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Resources</h5>
-              <ul className="space-y-2 text-xs text-slate-600">
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 font-display">Resources</h5>
+              <ul className="space-y-2 text-xs text-slate-600 font-sans">
                 <li><a href="#" className="hover:text-amber-600">Help Center</a></li>
                 <li><a href="#" className="hover:text-amber-600">Maintenance Guides</a></li>
                 <li><a href="#" className="hover:text-amber-600">API Documentation</a></li>
@@ -583,8 +585,8 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div>
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Legal & Company</h5>
-              <ul className="space-y-2 text-xs text-slate-600">
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 font-display">Legal & Company</h5>
+              <ul className="space-y-2 text-xs text-slate-600 font-sans">
                 <li><a href="#" className="hover:text-amber-600">About Us</a></li>
                 <li><a href="#" className="hover:text-amber-600">Privacy Policy</a></li>
                 <li><a href="#" className="hover:text-amber-600">Terms of Service</a></li>
@@ -593,8 +595,8 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} FleetPulse Inc. All rights reserved. Enterprise Fleet Maintenance Command Center.</p>
+          <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-sans">
+            <p>© {new Date().getFullYear()} SERVIQ Inc. All rights reserved. Enterprise Fleet Maintenance Command Center.</p>
             <div className="flex gap-4 mt-4 sm:mt-0">
               <span className="hover:text-slate-800 cursor-pointer">Security</span>
               <span className="hover:text-slate-800 cursor-pointer">Status</span>

@@ -110,7 +110,7 @@ export const PWAInstallPrompt: React.FC = () => {
             <ol className="list-decimal list-inside space-y-1 text-slate-700 text-[11px] leading-relaxed">
               <li>Tap the <span className="font-semibold text-slate-900">Share</span> button in Safari toolbar.</li>
               <li>Scroll down and tap <span className="font-semibold text-slate-900">Add to Home Screen</span> (<PlusSquare className="w-3 h-3 inline text-slate-900" />).</li>
-              <li>Tap <span className="font-semibold text-slate-900">Add</span> to install FleetPulse app.</li>
+              <li>Tap <span className="font-semibold text-slate-900">Add</span> to install SERVIQ app.</li>
             </ol>
           </div>
         ) : (
