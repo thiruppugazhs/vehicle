@@ -1,4 +1,4 @@
-﻿class VehicleModel {
+class VehicleModel {
   final String id;
   final String registrationNumber;
   final String name;
@@ -77,13 +77,14 @@
   }
 
   VehicleModel copyWith({
+    String? id,
     int? currentOdometer,
     int? healthScore,
     String? status,
     String? assignedDriverId,
   }) {
     return VehicleModel(
-      id: id,
+      id: id ?? this.id,
       registrationNumber: registrationNumber,
       name: name,
       type: type,
