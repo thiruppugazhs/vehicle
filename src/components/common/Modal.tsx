@@ -6,6 +6,7 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  icon?: React.ReactNode;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
 }
@@ -15,6 +16,7 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   subtitle,
+  icon,
   children,
   maxWidth = '2xl'
 }) => {
@@ -53,27 +55,30 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={onClose} 
       />
 
-      <div className="flex min-h-full items-center justify-center p-3 sm:p-6 text-center my-auto">
+      <div className="flex min-h-full items-center justify-center p-3 sm:p-4 text-center my-auto">
         <div 
-          className={`w-full ${maxWidthClass} my-auto max-h-[90vh] flex flex-col transform rounded-3xl bg-white text-left align-middle shadow-2xl transition-all border border-slate-200/90 overflow-hidden`}
+          className={`relative w-full ${maxWidthClass} my-auto max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col transform rounded-3xl bg-white text-left shadow-2xl transition-all border border-slate-200/90 overflow-hidden`}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-start justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 bg-white shrink-0">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 font-display">{title}</h3>
-              {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-white shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              {icon}
+              <div className="min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 font-display leading-tight truncate">{title}</h3>
+                {subtitle && <p className="text-xs text-slate-500 mt-0.5 truncate">{subtitle}</p>}
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer shrink-0 ml-2"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Body */}
-          <div className="px-5 sm:px-6 py-5 overflow-y-auto max-h-[calc(90vh-5rem)]">
+          <div className="px-5 sm:px-6 py-4 sm:py-5 overflow-y-auto flex-1 min-h-0">
             {children}
           </div>
         </div>
