@@ -42,8 +42,8 @@ import {
 import { computeVehicleHealthScore } from '../utils/healthCalculator';
 import { getDaysDifference } from '../utils/formatters';
 import { runAutomatedNotificationScan } from '../services/notificationWorker';
-import { supabase, subscribeToSupabaseTable, registerDeviceTokenInSupabase } from '../services/supabase';
-import { initializeWebMessaging } from '../services/firebase';
+import { initializeWebMessaging, registerDeviceTokenInFirestore, subscribeToOrgCollection } from '../services/firebase';
+import { supabase, subscribeToTable } from '../services/supabase';
 
 interface FleetContextType {
   // Navigation & UI state
@@ -475,138 +475,78 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => clearInterval(interval);
   }, [vehicles, schedules, documents, drivers, repairs, notifications]);
 
-  // Requirement 4, 7, 8, 38 & 39: Shared Realtime Supabase Sync & Device Tokens
+  // Requirement 4, 7, 8, 38 & 39: Shared Realtime Firebase Sync & FCM Device Tokens
   useEffect(() => {
-    // 1. Initialize Web FCM & register token in Supabase fleet_device_tokens table
+    // 1. Initialize Web FCM & register token in Firestore device_tokens collection
     initializeWebMessaging().then(token => {
       if (token) {
-        registerDeviceTokenInSupabase(userProfile.id, organization.id, token, 'web');
+        registerDeviceTokenInFirestore(userProfile.id, organization.id, token, 'web');
       }
     });
 
-    // 2. Fetch initial vehicles from Supabase PostgreSQL
-    supabase
-      .from('vehicles')
-      .select('*')
-      .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          const mappedVehicles: Vehicle[] = data.map((row: any) => ({
-            id: row.id,
-            registrationNumber: row.registration_number,
-            name: row.name,
-            type: row.type || 'Truck',
-            manufacturer: row.manufacturer,
-            model: row.model,
-            variant: row.variant || '',
-            year: row.year || 2023,
-            purchaseDate: row.purchase_date || '2023-01-01',
-            purchasePrice: row.purchase_price || 2500000,
-            vin: row.vin || 'MAT1234567890ABCD',
-            engineNumber: row.engine_number || 'ENG-998877',
-            seatingCapacity: row.seating_capacity || 3,
-            currentOdometer: row.current_odometer || 0,
-            status: row.status || 'Active',
-            fuelType: row.fuel_type || 'Diesel',
-            transmission: row.transmission || 'Manual',
-            healthScore: row.health_score ?? 100,
-            imageUrl: row.image_url,
-            organizationId: row.organization_id || 'org_01',
-            createdAt: row.created_at || new Date().toISOString(),
-            updatedAt: row.updated_at || new Date().toISOString()
-          }));
-
-          setVehicles(prev => {
-            const merged = [...prev];
-            for (const mv of mappedVehicles) {
-              const idx = merged.findIndex(v => v.id === mv.id || v.registrationNumber === mv.registrationNumber);
-              if (idx !== -1) merged[idx] = { ...merged[idx], ...mv };
-              else merged.unshift(mv);
-            }
-            return merged;
-          });
-        }
-      });
-
-    // 3. Real-time Supabase Postgres Changes listeners
-    const vehicleChannel = subscribeToSupabaseTable<any>('vehicles', ({ eventType, new: newRow }) => {
-      if (eventType === 'INSERT' || eventType === 'UPDATE') {
-        const mapped: Vehicle = {
-          id: newRow.id,
-          registrationNumber: newRow.registration_number,
-          name: newRow.name,
-          type: newRow.type || 'Truck',
-          manufacturer: newRow.manufacturer,
-          model: newRow.model,
-          variant: newRow.variant || '',
-          year: newRow.year || 2023,
-          purchaseDate: newRow.purchase_date || '2023-01-01',
-          purchasePrice: newRow.purchase_price || 2500000,
-          vin: newRow.vin || 'MAT1234567890ABCD',
-          engineNumber: newRow.engine_number || 'ENG-998877',
-          seatingCapacity: newRow.seating_capacity || 3,
-          currentOdometer: newRow.current_odometer || 0,
-          status: newRow.status || 'Active',
-          fuelType: newRow.fuel_type || 'Diesel',
-          transmission: newRow.transmission || 'Manual',
-          healthScore: newRow.health_score ?? 100,
-          imageUrl: newRow.image_url,
-          organizationId: newRow.organization_id || 'org_01',
-          createdAt: newRow.created_at || new Date().toISOString(),
-          updatedAt: newRow.updated_at || new Date().toISOString()
-        };
-
+    // 2. Real-time Firestore sync listeners
+    const unsubVehicles = subscribeToOrgCollection<Vehicle>('vehicles', organization.id, (remoteVehicles) => {
+      if (remoteVehicles && remoteVehicles.length > 0) {
         setVehicles(prev => {
-          const idx = prev.findIndex(v => v.id === mapped.id || v.registrationNumber === mapped.registrationNumber);
-          if (idx !== -1) {
-            const updated = [...prev];
-            updated[idx] = { ...updated[idx], ...mapped };
-            return updated;
+          const merged = [...prev];
+          for (const rv of remoteVehicles) {
+            const idx = merged.findIndex(v => v.id === rv.id);
+            if (idx !== -1) merged[idx] = { ...merged[idx], ...rv };
+            else merged.unshift(rv);
           }
-          return [mapped, ...prev];
+          return merged;
         });
       }
     });
 
-    const repairChannel = subscribeToSupabaseTable<any>('repair_tickets', ({ eventType, new: newRow }) => {
-      if (eventType === 'INSERT' || eventType === 'UPDATE') {
-        const mapped: RepairTicket = {
-          id: newRow.id,
-          vehicleId: newRow.vehicle_id,
-          issueTitle: newRow.issue_title,
-          issueCategory: newRow.issue_category,
-          description: newRow.description,
-          severity: newRow.severity || 'Moderate',
-          status: newRow.status || 'Reported',
-          reportedDate: newRow.reported_date,
-          reportedBy: newRow.reported_by || 'Fleet Operator',
-          startDate: newRow.start_date,
-          expectedCompletion: newRow.expected_completion,
-          actualCompletion: newRow.actual_completion,
-          estimatedCost: parseFloat(newRow.estimated_cost || '0'),
-          approvedCost: parseFloat(newRow.approved_cost || '0'),
-          actualCost: parseFloat(newRow.actual_cost || '0'),
-          assignedServiceCenter: newRow.service_center_name || 'Workshop',
-          technicianName: newRow.assigned_technician,
-          notes: newRow.notes,
-          photos: newRow.photo_urls || [],
-          organizationId: newRow.organization_id || 'org_01'
-        };
-
+    const unsubRepairs = subscribeToOrgCollection<RepairTicket>('repair_tickets', organization.id, (remoteRepairs) => {
+      if (remoteRepairs && remoteRepairs.length > 0) {
         setRepairs(prev => {
-          const idx = prev.findIndex(r => r.id === mapped.id);
+          const merged = [...prev];
+          for (const rr of remoteRepairs) {
+            const idx = merged.findIndex(r => r.id === rr.id);
+            if (idx !== -1) merged[idx] = { ...merged[idx], ...rr };
+            else merged.unshift(rr);
+          }
+          return merged;
+        });
+      }
+    });
+
+    // 3. Supabase Realtime Postgres Changes Listener
+    const supabaseVehiclesChannel = subscribeToTable<Vehicle>('vehicles', organization.id, (payload) => {
+      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+        setVehicles(prev => {
+          const idx = prev.findIndex(v => v.id === payload.new.id);
           if (idx !== -1) {
             const updated = [...prev];
-            updated[idx] = { ...updated[idx], ...mapped };
+            updated[idx] = { ...updated[idx], ...payload.new };
             return updated;
           }
-          return [mapped, ...prev];
+          return [payload.new, ...prev];
+        });
+      }
+    });
+
+    const supabaseRepairsChannel = subscribeToTable<RepairTicket>('repair_tickets', organization.id, (payload) => {
+      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+        setRepairs(prev => {
+          const idx = prev.findIndex(r => r.id === payload.new.id);
+          if (idx !== -1) {
+            const updated = [...prev];
+            updated[idx] = { ...updated[idx], ...payload.new };
+            return updated;
+          }
+          return [payload.new, ...prev];
         });
       }
     });
 
     return () => {
-      vehicleChannel.unsubscribe();
-      repairChannel.unsubscribe();
+      unsubVehicles();
+      unsubRepairs();
+      supabase.removeChannel(supabaseVehiclesChannel);
+      supabase.removeChannel(supabaseRepairsChannel);
     };
   }, [organization.id, userProfile.id]);
 

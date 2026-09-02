@@ -1,79 +1,68 @@
-﻿import { createClient, RealtimeChannel } from '@supabase/supabase-js';
+﻿import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://epnkoxnepauxkluqewib.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwbmtveG5lcGF1eGtsdXFld2liIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczOTU2NTEsImV4cCI6MjEwMjk3MTY1MX0.bnYLqzTFPrtoQjJjq4tRh2-ETfPymWJR32JBWNJVtnE';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://fyyobzkkkmyswfafyupo.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_oLpH7SkGzKqgXPL493rRcA_SyP0KNtX';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  }
+});
 
 /**
- * Real-time table change listener using Supabase Realtime Channels
+ * Subscribes to real-time PostgreSQL database changes using Supabase Realtime (WebSockets)
  */
-export function subscribeToSupabaseTable<T>(
+export function subscribeToTable<T>(
   tableName: string,
-  onUpdate: (payload: { eventType: string; new: T; old: T }) => void
+  organizationId: string,
+  onUpdate: (payload: { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: T; old: T }) => void
 ): RealtimeChannel {
-  return supabase
-    .channel(`public:${tableName}`)
+  const channel = supabase
+    .channel(`public:${tableName}:${organizationId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: tableName },
+      {
+        event: '*',
+        schema: 'public',
+        table: tableName,
+        filter: `organization_id=eq.${organizationId}`
+      },
       (payload) => {
         onUpdate({
-          eventType: payload.eventType,
+          eventType: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
           new: payload.new as T,
-          old: payload.old as T,
+          old: payload.old as T
         });
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`[Supabase Realtime] Subscribed to ${tableName} for org: ${organizationId}`);
+      }
+    });
+
+  return channel;
 }
 
 /**
- * Uploads a vehicle image or document to the Supabase 'fleet-assets' storage bucket
+ * Helper to check connection health to Supabase
  */
-export async function uploadToSupabaseStorage(
-  file: File,
-  folder: 'vehicles' | 'documents' | 'invoices' = 'vehicles'
-): Promise<string | null> {
+export async function checkSupabaseConnection(): Promise<boolean> {
   try {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const { error } = await supabase.storage
-      .from('fleet-assets')
-      .upload(fileName, file, { cacheControl: '3600', upsert: true });
-
-    if (error) throw error;
-
-    const { data } = supabase.storage.from('fleet-assets').getPublicUrl(fileName);
-    return data.publicUrl;
+    const { error } = await supabase.from('vehicles').select('id').limit(1);
+    if (error && error.code !== 'PGRST205') {
+      console.warn('[Supabase] Warning during connection check:', error.message);
+    }
+    return true;
   } catch (err) {
-    console.warn('Supabase storage upload error:', err);
-    return null;
-  }
-}
-
-/**
- * Saves a device token to Supabase for push notifications
- */
-export async function registerDeviceTokenInSupabase(
-  userId: string,
-  organizationId: string,
-  token: string,
-  platform: 'web' | 'android' | 'ios' = 'web'
-): Promise<void> {
-  try {
-    await supabase.from('fleet_device_tokens').upsert(
-      {
-        user_id: userId,
-        organization_id: organizationId,
-        fcm_token: token,
-        platform,
-        active: true,
-        last_active: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,platform,device_id' }
-    );
-  } catch (err) {
-    console.warn('Failed to register device token in Supabase:', err);
+    console.error('[Supabase] Connection error:', err);
+    return false;
   }
 }
