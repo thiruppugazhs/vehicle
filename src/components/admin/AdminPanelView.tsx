@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   ShieldCheck,
   Users,
@@ -27,14 +27,7 @@ interface AdminUser {
   lastActive: string;
 }
 
-const INITIAL_ADMIN_USERS: AdminUser[] = [
-  { id: 'usr_01', name: 'Rajesh Sharma', email: 'rajesh@abctransport.in', role: 'Owner', organization: 'ABC Transport Pvt Ltd', status: 'Active', lastActive: 'Just now' },
-  { id: 'usr_02', name: 'Arun Varma', email: 'arun.fleet@abctransport.in', role: 'Fleet Manager', organization: 'ABC Transport Pvt Ltd', status: 'Active', lastActive: '5 mins ago' },
-  { id: 'usr_03', name: 'Kavita Sundaram', email: 'kavita.driver@abctransport.in', role: 'Driver', organization: 'ABC Transport Pvt Ltd', status: 'Active', lastActive: '22 mins ago' },
-  { id: 'usr_04', name: 'Ramesh Patel', email: 'ramesh.tech@boschcare.in', role: 'Technician', organization: 'ABC Transport Pvt Ltd', status: 'Active', lastActive: '1 hour ago' },
-  { id: 'usr_05', name: 'Suresh Menon', email: 'suresh@southernexpress.com', role: 'Owner', organization: 'Southern Express Logistics', status: 'Active', lastActive: '3 hours ago' },
-  { id: 'usr_06', name: 'Vikram Singh', email: 'vikram.flagged@transport.in', role: 'Driver', organization: 'ABC Transport Pvt Ltd', status: 'Suspended', lastActive: '3 days ago' },
-];
+const INITIAL_ADMIN_USERS: AdminUser[] = [];
 
 export const AdminPanelView: React.FC = () => {
   const {

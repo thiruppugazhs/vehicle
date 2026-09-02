@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import 'offline_cache_service.dart';
@@ -6,170 +6,13 @@ import 'offline_cache_service.dart';
 class FirebaseService {
   final OfflineCacheService _cacheService = OfflineCacheService();
 
-  // Mock initial vehicles synced with web backend demo
-  final List<VehicleModel> _inMemoryVehicles = [
-    VehicleModel(
-      id: 'veh_01',
-      registrationNumber: 'TN 01 AB 1234',
-      name: 'Ashok Leyland 2820',
-      type: 'Truck',
-      manufacturer: 'Ashok Leyland',
-      model: '2820 Tipper',
-      variant: 'HD 6x4',
-      year: 2022,
-      currentOdometer: 48500,
-      healthScore: 92,
-      status: 'Active',
-      fuelType: 'Diesel',
-      transmission: 'Manual',
-      assignedDriverId: 'drv_01',
-      organizationId: 'org_01',
-      imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&auto=format&fit=crop&q=60',
-    ),
-    VehicleModel(
-      id: 'veh_02',
-      registrationNumber: 'MH 02 CK 9876',
-      name: 'Tata Prima Hauler',
-      type: 'Truck',
-      manufacturer: 'Tata Motors',
-      model: 'Prima 5530.S',
-      variant: 'Bogie',
-      year: 2021,
-      currentOdometer: 112400,
-      healthScore: 45,
-      status: 'Overdue',
-      fuelType: 'Diesel',
-      transmission: 'Manual',
-      assignedDriverId: 'drv_02',
-      organizationId: 'org_01',
-      imageUrl: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&auto=format&fit=crop&q=60',
-    ),
-    VehicleModel(
-      id: 'veh_03',
-      registrationNumber: 'DL 01 AA 5544',
-      name: 'Eicher Pro 3015',
-      type: 'Truck',
-      manufacturer: 'Eicher',
-      model: 'Pro 3015',
-      variant: 'LPT',
-      year: 2023,
-      currentOdometer: 32100,
-      healthScore: 88,
-      status: 'Active',
-      fuelType: 'Diesel',
-      transmission: 'Manual',
-      assignedDriverId: 'drv_03',
-      organizationId: 'org_01',
-      imageUrl: 'https://images.unsplash.com/photo-1586191582056-a60d75a894a4?w=600&auto=format&fit=crop&q=60',
-    ),
-  ];
-
-  final List<RepairTicketModel> _inMemoryRepairs = [
-    RepairTicketModel(
-      id: 'rep_01',
-      vehicleId: 'veh_02',
-      vehicleReg: 'MH 02 CK 9876',
-      issueTitle: 'Brake booster pneumatic line leak',
-      issueCategory: 'Brakes',
-      description: 'Air brake pressure drops below 6 bar under highway braking load.',
-      severity: 'Critical',
-      status: 'Repair In Progress',
-      reportedDate: '2026-08-27',
-      estimatedCost: 14500.0,
-      actualCost: 16200.0,
-      downtimeHours: 36,
-      assignedTechnician: 'Ramesh Patel',
-      organizationId: 'org_01',
-    ),
-    RepairTicketModel(
-      id: 'rep_02',
-      vehicleId: 'veh_01',
-      vehicleReg: 'TN 01 AB 1234',
-      issueTitle: 'Alternator charging diode failure',
-      issueCategory: 'Electrical',
-      description: 'Battery indicator flickering during idle engine speeds.',
-      severity: 'Moderate',
-      status: 'Inspection',
-      reportedDate: '2026-08-30',
-      estimatedCost: 6500.0,
-      assignedTechnician: 'Suresh Kumar',
-      organizationId: 'org_01',
-    ),
-  ];
-
-  final List<MaintenanceRecordModel> _inMemoryMaintenance = [
-    MaintenanceRecordModel(
-      id: 'maint_01',
-      vehicleId: 'veh_01',
-      vehicleReg: 'TN 01 AB 1234',
-      title: '40,000 km Major Engine Service',
-      serviceType: 'Preventative Service',
-      serviceDate: '2026-07-15',
-      odometerReading: 40200,
-      totalCost: 28500.0,
-      serviceCenterName: 'TVS Mobility Hub Chennai',
-      technician: 'Ramesh Patel',
-      nextDueDate: '2026-10-15',
-      nextDueOdometer: 50000,
-      notes: 'Replaced Mobil Delvac engine oil, primary oil filter, fuel water separator.',
-      organizationId: 'org_01',
-    ),
-  ];
-
-  final List<ExpenseModel> _inMemoryExpenses = [
-    ExpenseModel(
-      id: 'exp_01',
-      vehicleId: 'veh_01',
-      category: 'Fuel',
-      amount: 18450.0,
-      date: '2026-08-29',
-      vendor: 'Indian Oil Depot Poonamallee',
-      notes: '205 Liters High Speed Diesel',
-      organizationId: 'org_01',
-    ),
-  ];
-
-  final List<VehicleDocumentModel> _inMemoryDocs = [
-    VehicleDocumentModel(
-      id: 'doc_01',
-      vehicleId: 'veh_01',
-      documentType: 'Comprehensive Insurance',
-      documentNumber: 'POL-ICICI-99281',
-      issueDate: '2025-09-10',
-      expiryDate: '2026-09-10',
-      status: 'Expiring Soon',
-      organizationId: 'org_01',
-    ),
-    VehicleDocumentModel(
-      id: 'doc_02',
-      vehicleId: 'veh_02',
-      documentType: 'Pollution Under Control (PUC)',
-      documentNumber: 'PUC-MH-2026-44',
-      issueDate: '2026-02-15',
-      expiryDate: '2026-08-15',
-      status: 'Expired',
-      organizationId: 'org_01',
-    ),
-  ];
-
-  final List<NotificationModel> _inMemoryNotifications = [
-    NotificationModel(
-      id: 'notif_01',
-      title: 'Service Overdue',
-      message: 'Scheduled brake inspection for MH 02 CK 9876 is overdue by 14 days.',
-      type: 'urgent',
-      timestamp: '10 mins ago',
-      linkTo: {'screen': 'maintenance', 'vehicleId': 'veh_02'},
-    ),
-    NotificationModel(
-      id: 'notif_02',
-      title: 'Insurance Expiring in 9 Days',
-      message: 'Comprehensive Insurance for TN 01 AB 1234 expires on 2026-09-10.',
-      type: 'warning',
-      timestamp: '2 hours ago',
-      linkTo: {'screen': 'documents', 'vehicleId': 'veh_01'},
-    ),
-  ];
+  // In-memory cache starting fresh with zero mock data
+  final List<VehicleModel> _inMemoryVehicles = [];
+  final List<RepairTicketModel> _inMemoryRepairs = [];
+  final List<MaintenanceRecordModel> _inMemoryMaintenance = [];
+  final List<ExpenseModel> _inMemoryExpenses = [];
+  final List<VehicleDocumentModel> _inMemoryDocs = [];
+  final List<NotificationModel> _inMemoryNotifications = [];
 
   // ---------------------------------------------------------------------------
   // Sync Fetchers (Cloud Firestore Client with Offline Fallback)

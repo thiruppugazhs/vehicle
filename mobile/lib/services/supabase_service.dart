@@ -103,63 +103,8 @@ class SupabaseService {
     }
   }
 
-  // Initial demo vehicles cache for seamless offline and online experience
-  final List<VehicleModel> _inMemoryVehicles = [
-    VehicleModel(
-      id: 'veh_01',
-      registrationNumber: 'TN 01 AB 1234',
-      name: 'Ashok Leyland 2820',
-      type: 'Truck',
-      manufacturer: 'Ashok Leyland',
-      model: '2820 Tipper',
-      variant: 'HD 6x4',
-      year: 2022,
-      currentOdometer: 48500,
-      healthScore: 92,
-      status: 'Active',
-      fuelType: 'Diesel',
-      transmission: 'Manual',
-      assignedDriverId: 'drv_01',
-      organizationId: 'org_01',
-      imageUrl: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&auto=format&fit=crop&q=60',
-    ),
-    VehicleModel(
-      id: 'veh_02',
-      registrationNumber: 'MH 02 CK 9876',
-      name: 'Tata Prima Hauler',
-      type: 'Truck',
-      manufacturer: 'Tata Motors',
-      model: 'Prima 5530.S',
-      variant: 'Bogie',
-      year: 2021,
-      currentOdometer: 112400,
-      healthScore: 45,
-      status: 'Overdue',
-      fuelType: 'Diesel',
-      transmission: 'Manual',
-      assignedDriverId: 'drv_02',
-      organizationId: 'org_01',
-      imageUrl: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&auto=format&fit=crop&q=60',
-    ),
-    VehicleModel(
-      id: 'veh_03',
-      registrationNumber: 'DL 01 AA 5544',
-      name: 'Eicher Pro 3015',
-      type: 'Truck',
-      manufacturer: 'Eicher',
-      model: 'Pro 3015',
-      variant: 'LPT',
-      year: 2023,
-      currentOdometer: 32100,
-      healthScore: 88,
-      status: 'Active',
-      fuelType: 'Diesel',
-      transmission: 'Manual',
-      assignedDriverId: 'drv_03',
-      organizationId: 'org_01',
-      imageUrl: 'https://images.unsplash.com/photo-1586191582056-a60d75a894a4?w=600&auto=format&fit=crop&q=60',
-    ),
-  ];
+  // In-memory cache starting fresh with zero mock data
+  final List<VehicleModel> _inMemoryVehicles = [];
 
   Future<List<VehicleModel>> fetchVehicles(String orgId) async {
     try {

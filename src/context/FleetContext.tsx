@@ -281,7 +281,13 @@ export const FleetProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Local storage load or defaults
+  // Ensure completely fresh start by clearing any stale mock data in browser
+  if (typeof window !== 'undefined' && !localStorage.getItem('fleet_fresh_clean_v5')) {
+    localStorage.clear();
+    localStorage.setItem('fleet_fresh_clean_v5', 'true');
+  }
+
+  // Local storage load or defaults (clean empty initial arrays)
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.VEHICLES);
     return saved ? JSON.parse(saved) : initialVehicles;
