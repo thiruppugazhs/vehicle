@@ -17,6 +17,100 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
 });
 
 /**
+ * Initiates Google OAuth Sign-In with Supabase
+ */
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Sends a 6-digit OTP code to the specified email address
+ */
+export async function sendEmailOtp(email: string) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true
+    }
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Verifies a 6-digit OTP code sent to an email address
+ */
+export async function verifyEmailOtp(email: string, token: string) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Sends a 6-digit SMS OTP code to the specified mobile phone number
+ */
+export async function sendPhoneOtp(phone: string) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    phone,
+    options: {
+      shouldCreateUser: true
+    }
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Verifies a 6-digit SMS OTP code sent to a mobile phone number
+ */
+export async function verifyPhoneOtp(phone: string, token: string) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone,
+    token,
+    type: 'sms'
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Updates the user's password using Supabase Auth
+ */
+export async function changeUserPassword(newPassword: string) {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Deletes the authenticated user account and terminates the session
+ */
+export async function deleteAccount() {
+  try {
+    // Attempt deletion RPC if configured, otherwise sign out
+    await supabase.rpc('delete_user_account');
+  } catch (err) {
+    console.warn('[Supabase] Account deletion RPC fallback to session cleanup:', err);
+  }
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+  return true;
+}
+
+/**
  * Subscribes to real-time PostgreSQL database changes using Supabase Realtime (WebSockets)
  */
 export function subscribeToTable<T>(

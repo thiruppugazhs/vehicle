@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/models.dart';
 import 'offline_cache_service.dart';
@@ -30,6 +30,76 @@ class SupabaseService {
       return Supabase.instance.client;
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      if (client != null) {
+        await client!.auth.signInWithOAuth(OAuthProvider.google);
+      }
+    } catch (e) {
+      if (kDebugMode) print('[Supabase Mobile] Google Sign-In: $e');
+    }
+  }
+
+  Future<void> sendEmailOtp(String email) async {
+    try {
+      if (client != null) {
+        await client!.auth.signInWithOtp(email: email);
+      }
+    } catch (e) {
+      if (kDebugMode) print('[Supabase Mobile] Email OTP send: $e');
+    }
+  }
+
+  Future<AuthResponse?> verifyEmailOtp(String email, String token) async {
+    try {
+      if (client != null) {
+        return await client!.auth.verifyOTP(
+          email: email,
+          token: token,
+          type: OtpType.email,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) print('[Supabase Mobile] Email OTP verify: $e');
+    }
+    return null;
+  }
+
+  Future<void> sendPhoneOtp(String phone) async {
+    try {
+      if (client != null) {
+        await client!.auth.signInWithOtp(phone: phone);
+      }
+    } catch (e) {
+      if (kDebugMode) print('[Supabase Mobile] Phone OTP send: $e');
+    }
+  }
+
+  Future<AuthResponse?> verifyPhoneOtp(String phone, String token) async {
+    try {
+      if (client != null) {
+        return await client!.auth.verifyOTP(
+          phone: phone,
+          token: token,
+          type: OtpType.sms,
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) print('[Supabase Mobile] Phone OTP verify: $e');
+    }
+    return null;
+  }
+
+  Future<void> changePassword(String newPassword) async {
+    try {
+      if (client != null) {
+        await client!.auth.updateUser(UserAttributes(password: newPassword));
+      }
+    } catch (e) {
+      if (kDebugMode) print('[Supabase Mobile] Password update: $e');
     }
   }
 

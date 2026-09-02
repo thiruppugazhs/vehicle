@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Settings,
   User,
@@ -19,10 +19,17 @@ import {
   Phone,
   MapPin,
   FileCheck,
-  Users
+  Users,
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { OperationalRole } from '../../types';
+import { changeUserPassword, deleteAccount } from '../../services/supabase';
+import { Modal } from '../common/Modal';
 
 export const SettingsView: React.FC = () => {
   const {
@@ -39,8 +46,20 @@ export const SettingsView: React.FC = () => {
     exportVehiclesCSV
   } = useFleet();
 
-  const [activeSection, setActiveSection] = useState<'profile' | 'organization' | 'notifications' | 'preferences'>('profile');
+  const [activeSection, setActiveSection] = useState<'profile' | 'security' | 'organization' | 'notifications' | 'preferences'>('profile');
   const [isSaved, setIsSaved] = useState(false);
+
+  // Security & Password State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  // Account Deletion State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Profile State
   const [name, setName] = useState(userProfile.name);
@@ -109,9 +128,10 @@ export const SettingsView: React.FC = () => {
       )}
 
       {/* Navigation Tabs (Requirement 43) */}
-      <div className="flex border-b border-slate-200 gap-1 bg-white p-1 rounded-2xl border shadow-2xs">
+      <div className="flex border-b border-slate-200 gap-1 bg-white p-1 rounded-2xl border shadow-2xs overflow-x-auto">
         {[
           { id: 'profile', label: 'User Profile', icon: User },
+          { id: 'security', label: 'Security & Password', icon: Shield },
           { id: 'organization', label: 'Organization Workspace', icon: Building },
           { id: 'notifications', label: 'Notification Alerts', icon: Bell },
           { id: 'preferences', label: 'Localization & Metrics', icon: Globe }
@@ -210,6 +230,132 @@ export const SettingsView: React.FC = () => {
                   <option value="Driver">Driver (Assigned Vehicle, Odometer, Issues)</option>
                   <option value="Technician">Technician (Assigned Repairs & Notes)</option>
                 </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section: Security & Password */}
+        {activeSection === 'security' && (
+          <div className="space-y-6">
+            {/* Password Change Form */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-5">
+              <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-amber-600" />
+                Change Account Password
+              </h3>
+
+              {passwordMsg && (
+                <div
+                  className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
+                    passwordMsg.type === 'success'
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border border-rose-200 text-rose-800'
+                  }`}
+                >
+                  {passwordMsg.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  )}
+                  <span>{passwordMsg.text}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">New Password *</label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      placeholder="Minimum 6 characters"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Confirm New Password *</label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={e => setConfirmNewPassword(e.target.value)}
+                      placeholder="Re-type new password"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:outline-hidden focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  disabled={isUpdatingPassword || !newPassword}
+                  onClick={async () => {
+                    setPasswordMsg(null);
+                    if (newPassword.length < 6) {
+                      setPasswordMsg({ type: 'error', text: 'New password must be at least 6 characters.' });
+                      return;
+                    }
+                    if (newPassword !== confirmNewPassword) {
+                      setPasswordMsg({ type: 'error', text: 'New passwords do not match.' });
+                      return;
+                    }
+                    setIsUpdatingPassword(true);
+                    try {
+                      await changeUserPassword(newPassword);
+                      setPasswordMsg({ type: 'success', text: 'Password successfully updated in Supabase Auth!' });
+                      setNewPassword('');
+                      setConfirmNewPassword('');
+                    } catch (err: any) {
+                      setPasswordMsg({ type: 'error', text: err?.message || 'Failed to update password.' });
+                    } finally {
+                      setIsUpdatingPassword(false);
+                    }
+                  }}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shadow-2xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isUpdatingPassword ? (
+                    <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                  ) : (
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  )}
+                  Save New Password
+                </button>
+              </div>
+            </div>
+
+            {/* Danger Zone: Account Deletion */}
+            <div className="bg-rose-50/50 p-6 rounded-2xl border border-rose-200 shadow-2xs space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 bg-rose-100 text-rose-600 rounded-xl">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-rose-900">Danger Zone: Permanent Account Deletion</h3>
+                  <p className="text-xs text-rose-700 mt-0.5">
+                    Deleting your account will immediately revoke all access tokens, remove your user credentials from Supabase, and unlink your profile. This action cannot be reversed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-rose-200/60">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteModalOpen(true);
+                    setDeleteConfirmText('');
+                  }}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete My Account
+                </button>
               </div>
             </div>
           </div>
@@ -514,6 +660,68 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Account Deletion Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Confirm Account Deletion"
+        subtitle="This action is permanent and cannot be undone."
+        maxWidth="md"
+      >
+        <div className="space-y-4 text-left">
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1">
+            <p className="font-bold">Warning: Permanent Action</p>
+            <p>
+              Deleting your account will purge your credentials from Supabase Auth, invalidate all current sessions, and delete your user profile.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Type <span className="font-mono text-rose-600 font-extrabold">DELETE</span> below to confirm:
+            </label>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:bg-white focus:outline-hidden focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={deleteConfirmText.trim() !== 'DELETE' || isDeletingAccount}
+              onClick={async () => {
+                setIsDeletingAccount(true);
+                try {
+                  await deleteAccount();
+                  localStorage.clear();
+                  window.location.reload();
+                } catch (err: any) {
+                  alert(err?.message || 'Error deleting account');
+                  setIsDeletingAccount(false);
+                }
+              }}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+            >
+              {isDeletingAccount && (
+                <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+              )}
+              Permanently Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
