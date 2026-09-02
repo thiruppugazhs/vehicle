@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../services/firebase_service.dart';
 import '../services/notification_service.dart';
 
@@ -6,14 +6,14 @@ class AuthProvider extends ChangeNotifier {
   final FirebaseService _firebaseService = FirebaseService();
   final NotificationService _notificationService = NotificationService();
 
-  bool _isAuthenticated = true; // Auto-login for immediate demo usage
+  bool _isAuthenticated = true;
   bool _isOnboarded = true;
-  String _userId = 'usr_01';
-  String _userName = 'Rajesh Sharma';
-  String _userEmail = 'rajesh@abctransport.in';
-  String _userRole = 'Fleet Manager'; // 'Owner', 'Fleet Manager', 'Driver', 'Technician'
-  String _organizationId = 'org_01';
-  String _organizationName = 'ABC Transport Pvt Ltd';
+  String _userId = '';
+  String _userName = 'Fleet Operator';
+  String _userEmail = '';
+  String _userRole = 'Fleet Manager';
+  String _organizationId = '';
+  String _organizationName = '';
 
   bool get isAuthenticated => _isAuthenticated;
   bool get isOnboarded => _isOnboarded;

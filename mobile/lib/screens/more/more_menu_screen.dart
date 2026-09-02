@@ -42,18 +42,6 @@ class MoreMenuScreen extends StatelessWidget {
                       children: [
                         Text(auth.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         Text(auth.userEmail, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryAmber.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            'Role: ${auth.userRole}',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryAmberDark),
-                          ),
-                        ),
                       ],
                     ),
                   ),

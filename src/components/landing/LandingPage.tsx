@@ -35,10 +35,6 @@ export const LandingPage: React.FC = () => {
     setActiveTab('dashboard');
   };
 
-  const handleViewDemo = () => {
-    setActiveTab('dashboard');
-  };
-
   const features = [
     {
       icon: Bell,
@@ -146,12 +142,6 @@ export const LandingPage: React.FC = () => {
               Sign In
             </button>
             <button
-              onClick={handleViewDemo}
-              className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3.5 py-1.5 rounded-xl transition-all"
-            >
-              Live Demo
-            </button>
-            <button
               onClick={handleGetStarted}
               className="inline-flex items-center gap-1 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 active:bg-amber-700 px-4 py-1.5 rounded-xl shadow-xs transition-all"
             >
@@ -191,10 +181,10 @@ export const LandingPage: React.FC = () => {
             </button>
 
             <button
-              onClick={handleViewDemo}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border border-slate-200 shadow-xs hover:border-slate-300 transition-all"
+              onClick={() => setIsAuthModalOpen(true, 'login')}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border border-slate-200 shadow-xs hover:border-slate-300 transition-all cursor-pointer"
             >
-              View Demo
+              Sign In
             </button>
           </div>
 
@@ -220,10 +210,10 @@ export const LandingPage: React.FC = () => {
                   <span className="text-xs font-bold text-slate-700">FleetPulse Command Center — Live Overview</span>
                 </div>
                 <button
-                  onClick={handleViewDemo}
-                  className="text-xs font-semibold text-amber-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-amber-50 transition-colors"
+                  onClick={handleGetStarted}
+                  className="text-xs font-semibold text-amber-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-amber-50 transition-colors cursor-pointer"
                 >
-                  Enter Interactive Mode →
+                  Get Started →
                 </button>
               </div>
 
@@ -534,10 +524,10 @@ export const LandingPage: React.FC = () => {
               Get Started Free
             </button>
             <button
-              onClick={handleViewDemo}
-              className="px-8 py-3.5 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 border border-amber-400 transition-all"
+              onClick={() => setIsAuthModalOpen(true, 'login')}
+              className="px-8 py-3.5 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 border border-amber-400 transition-all cursor-pointer"
             >
-              Explore Live Demo
+              Sign In to Account
             </button>
           </div>
         </div>
@@ -567,9 +557,8 @@ export const LandingPage: React.FC = () => {
               <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Product</h5>
               <ul className="space-y-2 text-xs text-slate-600">
                 <li><a href="#features" className="hover:text-amber-600">Features</a></li>
-                <li><button onClick={handleViewDemo} className="hover:text-amber-600 text-left">Live Demo</button></li>
-                <li><a href="#pricing" className="hover:text-amber-600">Pricing</a></li>
                 <li><a href="#download-app" className="hover:text-amber-600">Mobile Apps</a></li>
+                <li><a href="#pricing" className="hover:text-amber-600">Pricing</a></li>
               </ul>
             </div>
 

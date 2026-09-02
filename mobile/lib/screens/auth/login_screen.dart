@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/fleet_provider.dart';
@@ -15,9 +15,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'rajesh@abctransport.in');
-  final _phoneController = TextEditingController(text: '+91 98401 23456');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _otpController = TextEditingController();
 
   int _selectedChannelIndex = 0; // 0 = Email, 1 = Phone SMS
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = false;
       _isOtpSent = true;
-      _statusMessage = 'SMS OTP sent to $phone (Demo: 654321)';
+      _statusMessage = 'SMS OTP sent to $phone. Please enter the 6-digit verification code.';
     });
   }
 

@@ -9,101 +9,11 @@ interface ImportVehiclesModalProps {
   onClose: () => void;
 }
 
-const SAMPLE_PRESET_FLEET: Vehicle[] = [
-  {
-    id: `veh_imp_${Date.now()}_1`,
-    registrationNumber: 'MH 12 QW 5501',
-    name: 'Mahindra Bolero Maxi Carrier #10',
-    type: 'Van',
-    manufacturer: 'Mahindra',
-    model: 'Bolero Maxi Truck',
-    variant: 'Plus Flatbed 2.5L',
-    year: 2023,
-    purchaseDate: '2023-08-10',
-    purchasePrice: 890000,
-    vin: 'MA1TC2MJ8M6E99100',
-    engineNumber: 'M2DICR-992100',
-    currentOdometer: 41200,
-    fuelType: 'Diesel',
-    transmission: 'Manual',
-    seatingCapacity: 2,
-    averageDailyKm: 90,
-    department: 'Intra-City Delivery',
-    location: 'Pune Hub',
-    status: 'Active',
-    healthScore: 92,
-    imageUrl: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&auto=format&fit=crop&q=80',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: `veh_imp_${Date.now()}_2`,
-    registrationNumber: 'DL 01 XY 8822',
-    name: 'Tata Ace EV Mini Hauler #02',
-    type: 'EV / Hybrid',
-    manufacturer: 'Tata Motors',
-    model: 'Ace EV',
-    variant: '21.3kWh Lithium Iron Phosphate',
-    year: 2024,
-    purchaseDate: '2024-03-15',
-    purchasePrice: 999000,
-    vin: 'MAT623912P9A88211',
-    engineNumber: 'ACE-EV-BAT-88',
-    currentOdometer: 14500,
-    fuelType: 'Electric',
-    transmission: 'Automatic',
-    seatingCapacity: 2,
-    averageDailyKm: 65,
-    department: 'Last Mile Green Courier',
-    location: 'Delhi Central Depot',
-    status: 'Active',
-    healthScore: 99,
-    imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: `veh_imp_${Date.now()}_3`,
-    registrationNumber: 'KA 04 MM 3311',
-    name: 'Ashok Leyland Bada Dost i4 #01',
-    type: 'Pickup Truck',
-    manufacturer: 'Ashok Leyland',
-    model: 'Bada Dost',
-    variant: 'i4 1.5L Turbo Charged Intercooled',
-    year: 2023,
-    purchaseDate: '2023-11-20',
-    purchasePrice: 940000,
-    vin: 'MB1BA250M6P88290',
-    engineNumber: 'AL-15T-7721',
-    currentOdometer: 52400,
-    fuelType: 'Diesel',
-    transmission: 'Manual',
-    seatingCapacity: 3,
-    averageDailyKm: 120,
-    department: 'Regional Supply',
-    location: 'Bangalore Hub',
-    status: 'Due for Service',
-    healthScore: 74,
-    imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
-
 export const ImportVehiclesModal: React.FC<ImportVehiclesModalProps> = ({ isOpen, onClose }) => {
   const { importVehicles } = useFleet();
   const [csvText, setCsvText] = useState('');
   const [error, setError] = useState('');
   const [successCount, setSuccessCount] = useState<number | null>(null);
-
-  const handleImportPreset = () => {
-    importVehicles(SAMPLE_PRESET_FLEET);
-    setSuccessCount(SAMPLE_PRESET_FLEET.length);
-    setTimeout(() => {
-      setSuccessCount(null);
-      onClose();
-    }, 1200);
-  };
 
   const handleParseAndImport = (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,22 +114,7 @@ export const ImportVehiclesModal: React.FC<ImportVehiclesModalProps> = ({ isOpen
           </div>
         )}
 
-        {/* 1-Click Preset Demo Batch */}
-        <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            <span className="font-bold text-amber-950 block text-sm">Quick Demo Fleet Import</span>
-            <p className="text-[11px] text-amber-800 mt-0.5">
-              Instantly import a 3-unit fleet batch (Delivery Van, Mini EV Hauler & Pickup) with preloaded odometers and specs.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleImportPreset}
-            className="shrink-0 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-2xs transition-colors"
-          >
-            Import 3 Demo Units
-          </button>
-        </div>
+
 
         {/* Manual CSV or JSON Paste */}
         <form onSubmit={handleParseAndImport} className="space-y-3 pt-2 border-t border-slate-100">

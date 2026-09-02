@@ -93,9 +93,6 @@ export const DashboardView: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
               Fleet Command Center
             </h1>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-              Live Monitoring
-            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Tracking {totalVehicles} active vehicles across {userProfile.organizationName || 'your garage'}.

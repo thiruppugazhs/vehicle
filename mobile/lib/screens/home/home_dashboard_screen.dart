@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/fleet_provider.dart';
@@ -35,25 +35,6 @@ class HomeDashboardScreen extends StatelessWidget {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryAmber.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.primaryAmber.withOpacity(0.3)),
-            ),
-            child: Text(
-              auth.userRole,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryAmberDark,
-              ),
-            ),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         color: AppTheme.primaryAmber,

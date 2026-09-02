@@ -64,7 +64,7 @@ export const SettingsView: React.FC = () => {
   // Profile State
   const [name, setName] = useState(userProfile.name);
   const [email, setEmail] = useState(userProfile.email);
-  const [phone, setPhone] = useState(userProfile.phone || '+91 98401 23456');
+  const [phone, setPhone] = useState(userProfile.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(userProfile.avatarUrl || '');
 
   // Organization State
@@ -620,14 +620,14 @@ export const SettingsView: React.FC = () => {
         </div>
       </form>
 
-      {/* Backup, Export & Demo Data Management (Requirement 59) */}
+      {/* Backup & Export Management */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
         <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
-          <RefreshCw className="w-4 h-4 text-amber-600" />
-          Data Backup & Demo Fleet Reset
+          <Download className="w-4 h-4 text-amber-600" />
+          Data Backup & Fleet Export
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <button
             type="button"
             onClick={exportVehiclesCSV}
@@ -644,19 +644,6 @@ export const SettingsView: React.FC = () => {
           >
             <FileCheck className="w-4 h-4 text-slate-500" />
             Download Full JSON Backup
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (confirm('Reset all vehicle maintenance records, repairs, and documents to default demo state?')) {
-                resetToDemoData();
-              }
-            }}
-            className="p-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl font-bold text-rose-700 flex items-center justify-center gap-2 cursor-pointer transition-colors"
-          >
-            <RefreshCw className="w-4 h-4 text-rose-600" />
-            Reset to Sample Demo Data
           </button>
         </div>
       </div>
