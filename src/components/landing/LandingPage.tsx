@@ -19,7 +19,10 @@ import {
   Gauge,
   PhoneCall,
   Mail,
-  Car
+  Car,
+  Smartphone,
+  Download,
+  QrCode
 } from 'lucide-react';
 import { useFleet } from '../../context/FleetContext';
 import { StatusBadge } from '../common/StatusBadge';
@@ -129,7 +132,10 @@ export const LandingPage: React.FC = () => {
             <a href="#features" className="hover:text-amber-600 transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-amber-600 transition-colors">How It Works</a>
             <a href="#benefits" className="hover:text-amber-600 transition-colors">Benefits</a>
-            <a href="#pricing" className="hover:text-amber-600 transition-colors">Pricing</a>
+            <a href="#download-app" className="text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-1 font-bold">
+              <Smartphone className="w-3.5 h-3.5" />
+              Download App
+            </a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -375,6 +381,142 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Download Mobile App Section */}
+      <section id="download-app" className="py-20 bg-white border-t border-slate-200 text-left">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold mb-3">
+              <Smartphone className="w-3.5 h-3.5 text-amber-600" />
+              Native Android & iOS Applications
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Download FleetPulse Mobile App
+            </h2>
+            <p className="mt-4 text-base text-slate-600">
+              Empower your drivers, technicians, and fleet managers on the go with real-time sync, offline logging, camera receipt scanner, and push alerts.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
+            {/* Android Card */}
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                      <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.997-3.459a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1365.8249L4.8412 5.4469a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.997 3.459C2.6889 11.1867.3432 14.6581 0 18.775h24c-.3432-4.1169-2.6889-7.5883-6.1185-9.4536" />
+                    </svg>
+                  </div>
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">
+                    Android APK (v2.4.0)
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Android Package (.apk)</h3>
+                <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+                  Direct installable APK for all Android smartphones and rugged fleet tablets. Features camera scanner, offline caching, and real-time FCM push.
+                </p>
+
+                <div className="space-y-2.5 mb-6 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Requires Android 8.0 (Oreo) or later</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Package: <code className="font-mono text-[11px] bg-slate-200/60 px-1.5 py-0.5 rounded">com.fleetpulse.vehicle_mobile</code></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Supports arm64-v8a, armeabi-v7a, x86_64</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <a
+                  href="/downloads/fleetpulse-android.apk"
+                  download="fleetpulse-android.apk"
+                  className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Android APK
+                </a>
+                <p className="text-center text-[11px] text-slate-400 mt-2">
+                  Tap downloaded file & select "Install".
+                </p>
+              </div>
+            </div>
+
+            {/* iOS Card */}
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 flex flex-col justify-between hover:border-slate-400 hover:shadow-md transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-200 border border-slate-300 text-slate-900 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.92.04-2.02.62-2.66 1.37-.56.65-1.06 1.71-.93 2.74 1.03.08 2.05-.55 2.58-1.24z" />
+                    </svg>
+                  </div>
+                  <span className="px-3 py-1 bg-slate-200 text-slate-800 font-bold text-xs rounded-full border border-slate-300">
+                    iOS Package (v2.4.0)
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-900 mb-2">iOS Package (.ipa)</h3>
+                <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+                  Native iOS client built for iPhone and iPad. Features Cupertino touch controls, APNs background alerts, and camera barcode/invoice scanning.
+                </p>
+
+                <div className="space-y-2.5 mb-6 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
+                    <span>Requires iOS 14.0 or later (iPhone & iPad)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
+                    <span>Bundle ID: <code className="font-mono text-[11px] bg-slate-200/60 px-1.5 py-0.5 rounded">com.fleetpulse.vehicleMobile</code></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
+                    <span>Install via Apple Configurator, AltStore, or TestFlight</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <a
+                  href="/downloads/fleetpulse-ios.ipa"
+                  download="fleetpulse-ios.ipa"
+                  className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 active:bg-black text-white font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2.5 text-sm cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Download iOS Package (.ipa)
+                </a>
+                <p className="text-center text-[11px] text-slate-400 mt-2">
+                  Includes full mobile configuration & manifest.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Features Highlight Bar */}
+          <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-6 max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-950">
+              <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Offline Cache & Sync</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-950">
+              <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Camera Receipt Scanner</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-950">
+              <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Real-time Push Notifications</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-br from-amber-500 to-amber-600 text-white text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -404,7 +546,7 @@ export const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
             <div className="col-span-2">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
@@ -427,7 +569,17 @@ export const LandingPage: React.FC = () => {
                 <li><a href="#features" className="hover:text-amber-600">Features</a></li>
                 <li><button onClick={handleViewDemo} className="hover:text-amber-600 text-left">Live Demo</button></li>
                 <li><a href="#pricing" className="hover:text-amber-600">Pricing</a></li>
-                <li><a href="#" className="hover:text-amber-600">Releases</a></li>
+                <li><a href="#download-app" className="hover:text-amber-600">Mobile Apps</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Download App</h5>
+              <ul className="space-y-2 text-xs text-slate-600">
+                <li><a href="/downloads/fleetpulse-android.apk" download="fleetpulse-android.apk" className="hover:text-emerald-600 font-semibold flex items-center gap-1.5"><Download className="w-3 h-3 text-emerald-600" /> Android APK</a></li>
+                <li><a href="/downloads/fleetpulse-ios.ipa" download="fleetpulse-ios.ipa" className="hover:text-slate-900 font-semibold flex items-center gap-1.5"><Download className="w-3 h-3 text-slate-600" /> iOS Package (.ipa)</a></li>
+                <li><a href="#download-app" className="hover:text-amber-600">Install Guide</a></li>
+                <li><a href="#download-app" className="hover:text-amber-600">Release (v2.4.0)</a></li>
               </ul>
             </div>
 

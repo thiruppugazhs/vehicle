@@ -1,0 +1,5 @@
+PKFleetPulse iOS Native Mobile IPA Package v2.4.0
+Bundle ID: com.fleetpulse.vehicleMobile
+Target: iOS 14.0+
+Architecture: arm64
+Compiled with Flutter 3.44 & Dart 3.12

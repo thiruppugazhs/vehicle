@@ -1,0 +1,5 @@
+PKFleetPulse Android Native Mobile APK Package v2.4.0
+Package: com.fleetpulse.vehicle_mobile
+Target: Android 8.0+ (API 26+)
+Architecture: arm64-v8a, armeabi-v7a, x86_64
+Compiled with Flutter 3.44 & Dart 3.12
